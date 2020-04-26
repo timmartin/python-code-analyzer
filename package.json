@@ -1,0 +1,19 @@
+{
+  "name": "@timmartin2/python-code-analyzer",
+  "version": "0.0.1",
+  "description": "React tools to show live simulation and analysis of Python code",
+  "main": "src/index.ts",
+  "author": "Tim Martin",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-typescript": "^7.9.0",
+    "babel-loader": "^8.1.0",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  },
+  "scripts": {
+    "build": "webpack --mode production"
+  }
+}
