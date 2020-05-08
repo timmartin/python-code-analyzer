@@ -5,6 +5,7 @@ interface Props {
   initialCode: string;
 }
 
+// Tokenize some Python code (using the tokenizer from the Skulpt library)
 const tokenize = (code: string, setOutput: (data: object[]) => void) => {
   const tokens = [] as object[];
 
