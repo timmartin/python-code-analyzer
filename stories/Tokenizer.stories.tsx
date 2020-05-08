@@ -8,3 +8,7 @@ export default {
 };
 
 export const Default = () => <Tokenizer initialCode="print('a' + b)" />;
+
+export const NotEditable = () => (
+  <Tokenizer initialCode="print('a' + b)" editable={false} />
+);
