@@ -7,6 +7,11 @@
   "author": "Tim Martin",
   "license": "MIT",
   "private": false,
+  "files": [
+    "lib/**/*.js",
+    "lib/**/*.d.ts",
+    "lib/**/*.css"
+  ],
   "devDependencies": {
     "@babel/core": "^7.9.6",
     "@babel/preset-typescript": "^7.9.0",
@@ -20,10 +25,14 @@
     "@typescript-eslint/parser": "^2.29.0",
     "babel-loader": "^8.1.0",
     "eslint": "^6.8.0",
+    "node-sass": "^4.14.1",
+    "sass-loader": "^8.0.2",
     "typescript": "^3.8.3"
   },
   "scripts": {
-    "build": "tsc",
+    "build-ts": "tsc",
+    "build-scss": "node-sass --output-style compressed -o lib src/*.scss",
+    "build": "npm run build-ts && npm run build-scss",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },
