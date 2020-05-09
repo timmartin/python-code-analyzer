@@ -31,13 +31,18 @@
     "eslint-plugin-react-hooks": "^2.5.1",
     "node-sass": "^4.14.1",
     "sass-loader": "^8.0.2",
+    "stylelint": "^13.3.3",
+    "stylelint-config-standard": "^20.0.0",
+    "stylelint-scss": "^3.17.2",
     "typescript": "^3.8.3"
   },
   "scripts": {
     "build-ts": "tsc",
     "build-scss": "node-sass --output-style compressed -o lib src/*.scss",
     "build": "npm run build-ts && npm run build-scss",
-    "lint": "eslint src/**/*.ts src/**/*.tsx",
+    "lint": "npm run lint-ts && npm run lint-scss",
+    "lint-ts": "eslint src/**/*.ts src/**/*.tsx",
+    "lint-scss": "stylelint src/**/*.scss",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },
