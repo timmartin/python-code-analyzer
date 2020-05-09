@@ -61,24 +61,32 @@ const Tokenizer = ({ initialCode, editable = true }: Props) => {
 
   return (
     <div className="python-analyzer-view tokenizer">
-      {codeView}
+      <div className="editor">
+        {codeView}
 
-      {editable && (
-        <button type="button" onClick={() => tokenize(code, setOutput)}>
-          Tokenize code
-        </button>
-      )}
+        {editable && (
+          <button
+            type="button"
+            className="execute"
+            onClick={() => tokenize(code, setOutput)}
+          >
+            Tokenize code
+          </button>
+        )}
+      </div>
 
-      <table>
-        <tbody>
-          {output.map((token) => (
-            <tr>
-              <td>{token.type}</td>
-              <td>{token.token}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="output">
+        <table className="output">
+          <tbody>
+            {output.map((token) => (
+              <tr>
+                <td>{token.type}</td>
+                <td>{token.token}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -1,0 +1,29 @@
+.python-analyzer-view.tokenizer {
+    display: flex;
+    justify-content: center;
+}
+
+.python-analyzer-view.tokenizer div {
+    margin: 0.5em;
+}
+
+.python-analyzer-view.tokenizer .editor {
+    max-width: 30em;
+    flex-grow: 1;
+}
+
+.python-analyzer-view.tokenizer .output {
+    min-width: 5em;
+    max-width: 20em;
+    flex-grow: 1;
+}
+
+.python-analyzer-view.tokenizer .editor textarea {
+    width: 100%;
+    height: 10em;
+    overflow: auto;
+}
+
+.python-analyzer-view.tokenizer .editor button {
+    display: block;
+}
