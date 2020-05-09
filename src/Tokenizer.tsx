@@ -78,8 +78,8 @@ const Tokenizer = ({ initialCode, editable = true }: Props) => {
       <div className="output">
         <table className="output">
           <tbody>
-            {output.map((token) => (
-              <tr>
+            {output.map((token, index) => (
+              <tr key={index}>
                 <td>{token.type}</td>
                 <td>{token.token}</td>
               </tr>
