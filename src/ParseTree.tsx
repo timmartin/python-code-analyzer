@@ -6,36 +6,58 @@ import createEngine, {
 } from "@projectstorm/react-diagrams";
 import { CanvasWidget } from "@projectstorm/react-canvas-core";
 
-const ParseTree = () => {
-	//1) setup the diagram engine
-	var engine = createEngine();
+interface ASTAssignment {
+  _astname: "Assign";
+  value: ASTNode;
+  targets: ASTNode[];
+}
 
-	//2) setup the diagram model
-	var model = new DiagramModel();
+interface ASTNumber {
+  _astname: "Num";
+}
 
-	//3-A) create a default node
-	var node1 = new DefaultNodeModel({
-		name: 'Node 1',
-		color: 'rgb(0,192,255)'
-	});
-	node1.setPosition(100, 100);
-	let port1 = node1.addOutPort('Out');
+interface ASTName {
+  _astname: "Name";
+}
 
-	//3-B) create another default node
-	var node2 = new DefaultNodeModel('Node 2', 'rgb(192,255,0)');
-	let port2 = node2.addInPort('In');
-	node2.setPosition(400, 100);
+type ASTNode = ASTAssignment | ASTNumber | ASTName;
 
-	// link the ports
-	let link1 = port1.link<DefaultLinkModel>(port2);
-	link1.getOptions().testName = 'Test';
-	link1.addLabel('Hello World!');
+interface ParseTreeProps {
+  ast: ASTNode[];
+}
 
-	//4) add the models to the root graph
-	model.addAll(node1, node2, link1);
+const makeAssignment = (ast: ASTAssignment) => {
+  const links: DefaultLinkModel[] = [];
 
-	//5) load model into engine
-	engine.setModel(model);
+  const mainNode = new DefaultNodeModel("Assignment", "rgb(192,255,0)");
+  mainNode.setPosition(100, 100);
+  const valuePort = mainNode.addOutPort("Value");
+  const targetPort = mainNode.addOutPort("Target");
+
+  const valueNode = new DefaultNodeModel(ast.value._astname, "rgb(192,255,0)");
+  valueNode.setPosition(300, 100);
+  const valueInPort = valueNode.addInPort("In");
+  links.push(valuePort.link<DefaultLinkModel>(valueInPort));
+
+  const targetNode = new DefaultNodeModel(ast.targets[0]._astname, "rgb(192,255,0)");
+  targetNode.setPosition(300, 200);
+  const targetInPort = targetNode.addInPort("in");
+  links.push(targetPort.link<DefaultLinkModel>(targetInPort));
+
+  return [[mainNode, valueNode, targetNode], links];
+}
+
+const ParseTree = ({ ast }: ParseTreeProps) => {
+  var engine = createEngine();
+  var model = new DiagramModel();
+
+  if (ast[0]._astname === "Assign") {
+    const [nodes, links] = makeAssignment(ast[0]);
+    nodes.forEach((node) => model.addNode(node));
+    links.forEach((link) => model.addLink(link));
+  }
+
+  engine.setModel(model);
 
   return (
     <div className="python-analyzer-view parse-tree">

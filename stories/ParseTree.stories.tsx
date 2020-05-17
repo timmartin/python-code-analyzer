@@ -1,4 +1,5 @@
 import * as React from "react";
+import * as Sk from "skulpt";
 
 import ParseTree from "../src/ParseTree";
 
@@ -8,5 +9,8 @@ export default {
 };
 
 export const Default = () => {
-  return <ParseTree />;
+  const parse = Sk.parse("<str>", "a = 42\n");
+  const ast = Sk.astFromParse(parse.cst, "<str>");
+
+  return <ParseTree ast={ast.body} />;
 };
