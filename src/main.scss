@@ -1,29 +1,39 @@
-.python-analyzer-view.tokenizer {
-  display: flex;
-  justify-content: center;
+.python-analyzer-view {
+  &.tokenizer {
+    display: flex;
+    justify-content: center;
 
-  div {
-    margin: 0.5em;
-  }
+    div {
+      margin: 0.5em;
+    }
 
-  .editor {
-    max-width: 30em;
-    flex-grow: 1;
+    .editor {
+      max-width: 30em;
+      flex-grow: 1;
 
-    textarea {
-      width: 100%;
-      height: 10em;
-      overflow: auto;
+      textarea {
+        width: 100%;
+        height: 10em;
+        overflow: auto;
+      }
+    }
+
+    .output {
+      min-width: 5em;
+      max-width: 20em;
+      flex-grow: 1;
+    }
+
+    button {
+      display: block;
     }
   }
 
-  .output {
-    min-width: 5em;
-    max-width: 20em;
-    flex-grow: 1;
-  }
+  &.parse-tree {
+    height: 500px;
 
-  button {
-    display: block;
+    .block-diagram-canvas {
+      height: 100%;
+    }
   }
 }

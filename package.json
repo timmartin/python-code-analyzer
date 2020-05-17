@@ -47,6 +47,13 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
+    "@emotion/core": "^10.0.28",
+    "@projectstorm/react-diagrams": "^6.1.1",
+    "closest": "^0.0.1",
+    "dagre": "^0.8.5",
+    "mathjs": "^7.0.0",
+    "pathfinding": "^0.4.18",
+    "paths-js": "^0.4.10",
     "react": "^16.13.1",
     "skulpt": "^0.11.1"
   }
