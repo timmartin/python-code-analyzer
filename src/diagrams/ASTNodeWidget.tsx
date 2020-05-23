@@ -10,10 +10,17 @@ interface Props {
 const ASTNodeWidget = (props: Props) => {
   return (
     <div className="ast-node">
-      <PortWidget port={props.node.inPort} engine={props.engine} />
-      {props.node.name}
+      <PortWidget
+        className="input-port"
+        port={props.node.inPort}
+        engine={props.engine}
+      />
+      <div className="node-label">{props.node.name}</div>
       {props.node.subtreePorts.map((port, idx) => (
-        <PortWidget key={idx} port={port} engine={props.engine} />
+        <div className="node-link">
+          <div className="link-label">{port.getName()}</div>
+          <PortWidget key={idx} port={port} engine={props.engine} />
+        </div>
       ))}
     </div>
   );
