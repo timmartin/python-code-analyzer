@@ -5,6 +5,8 @@ import createEngine, {
   DefaultLinkModel,
 } from "@projectstorm/react-diagrams";
 import { CanvasWidget } from "@projectstorm/react-canvas-core";
+import { ASTNodeFactory } from "./diagrams/ASTNodeFactory";
+import ASTNodeModel from "./diagrams/ASTNodeModel";
 
 interface ASTAssignment {
   _astname: "Assign";
@@ -26,33 +28,33 @@ interface ParseTreeProps {
   ast: ASTNode[];
 }
 
-const makeAssignment = (ast: ASTAssignment) => {
+const makeAssignmentNode = (ast: ASTAssignment) => {
   const links: DefaultLinkModel[] = [];
 
-  const mainNode = new DefaultNodeModel("Assignment", "rgb(192,255,0)");
+  const mainNode = new ASTNodeModel("Assign");
   mainNode.setPosition(100, 100);
-  const valuePort = mainNode.addOutPort("Value");
-  const targetPort = mainNode.addOutPort("Target");
+  const valuePort = mainNode.addSubtreePort("Value");
+  const targetPort = mainNode.addSubtreePort("Target");
 
-  const valueNode = new DefaultNodeModel(ast.value._astname, "rgb(192,255,0)");
+  const valueNode = new ASTNodeModel(ast.value._astname);
   valueNode.setPosition(300, 100);
-  const valueInPort = valueNode.addInPort("In");
-  links.push(valuePort.link<DefaultLinkModel>(valueInPort));
+  links.push(valuePort.link<DefaultLinkModel>(valueNode.inPort));
 
-  const targetNode = new DefaultNodeModel(ast.targets[0]._astname, "rgb(192,255,0)");
+  const targetNode = new ASTNodeModel(ast.targets[0]._astname);
   targetNode.setPosition(300, 200);
-  const targetInPort = targetNode.addInPort("in");
-  links.push(targetPort.link<DefaultLinkModel>(targetInPort));
+
+  links.push(targetPort.link<DefaultLinkModel>(targetNode.inPort));
 
   return [[mainNode, valueNode, targetNode], links];
 }
 
 const ParseTree = ({ ast }: ParseTreeProps) => {
   var engine = createEngine();
+  engine.getNodeFactories().registerFactory(new ASTNodeFactory())
   var model = new DiagramModel();
 
   if (ast[0]._astname === "Assign") {
-    const [nodes, links] = makeAssignment(ast[0]);
+    const [nodes, links] = makeAssignmentNode(ast[0]);
     nodes.forEach((node) => model.addNode(node));
     links.forEach((link) => model.addLink(link));
   }
