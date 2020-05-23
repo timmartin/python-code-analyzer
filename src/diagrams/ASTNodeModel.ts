@@ -13,12 +13,15 @@ export default class ASTNodeModel extends NodeModel {
 
   public inPort: DefaultPortModel;
 
-  constructor(name?: string) {
+  public value: string | undefined;
+
+  constructor(name?: string, value?: string) {
     super({
       type: "ast",
     });
 
     this.subtreePorts = [];
+    this.value = value;
 
     if (name !== undefined) {
       this.name = name;
