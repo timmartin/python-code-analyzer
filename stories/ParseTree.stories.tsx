@@ -9,7 +9,7 @@ export default {
 };
 
 export const Default = () => {
-  const parse = Sk.parse("<str>", "a = 42\n");
+  const parse = Sk.parse("<str>", "a = 42 + 1\n");
   const ast = Sk.astFromParse(parse.cst, "<str>");
 
   return <ParseTree ast={ast.body} />;
