@@ -18,9 +18,9 @@ const ASTNodeWidget = (props: Props) => {
       <div className="node-label">{props.node.name}</div>
       {props.node.value && <div className="node-value">{props.node.value}</div>}
       {props.node.subtreePorts.map((port, idx) => (
-        <div className="node-link">
+        <div className="node-link" key={idx}>
           <div className="link-label">{port.getName()}</div>
-          <PortWidget key={idx} port={port} engine={props.engine} />
+          <PortWidget port={port} engine={props.engine} />
         </div>
       ))}
     </div>

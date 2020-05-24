@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as Sk from "skulpt";
 import createEngine, {
+  DagreEngine,
   DiagramModel,
   DefaultLinkModel,
 } from "@projectstorm/react-diagrams";
@@ -37,24 +38,20 @@ const makeNumberNode = (ast: ASTNumber) => {
 };
 
 const makeNameNode = (ast: ASTName) => {
-  console.log(ast);
   return new ASTNodeModel("Name", Sk.ffi.remapToJs(ast.id));
-}
+};
 
 const makeAssignmentNode = (ast: ASTAssignment) => {
   const links: DefaultLinkModel[] = [];
 
   const mainNode = new ASTNodeModel("Assign");
-  mainNode.setPosition(100, 100);
   const valuePort = mainNode.addSubtreePort("Value");
   const targetPort = mainNode.addSubtreePort("Target");
 
   const valueNode = makeASTNode(ast.value);
-  valueNode.setPosition(300, 100);
   links.push(valuePort.link<DefaultLinkModel>(valueNode.inPort));
 
   const targetNode = makeASTNode(ast.targets[0]);
-  targetNode.setPosition(300, 200);
 
   links.push(targetPort.link<DefaultLinkModel>(targetNode.inPort));
 
@@ -74,15 +71,28 @@ const makeASTNode = (ast: ASTNode) => {
 };
 
 const ParseTree = ({ ast }: ParseTreeProps) => {
-  var engine = createEngine();
+  const engine = createEngine();
   engine.getNodeFactories().registerFactory(new ASTNodeFactory());
-  var model = new DiagramModel();
+
+  const routingEngine = new DagreEngine({
+    graph: {
+      rankDir: "LR",
+      ranker: "longest-path",
+      marginx: 25,
+      marginy: 25,
+    },
+    includeLinks: true,
+  });
+
+  const model = new DiagramModel();
 
   if (ast[0]._astname === "Assign") {
     const [nodes, links] = makeAssignmentNode(ast[0]);
     nodes.forEach((node) => model.addNode(node));
     links.forEach((link) => model.addLink(link));
   }
+
+  routingEngine.redistribute(model);
 
   engine.setModel(model);
 

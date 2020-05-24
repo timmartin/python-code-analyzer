@@ -20,6 +20,8 @@ export default class ASTNodeModel extends NodeModel {
       type: "ast",
     });
 
+    this.height = 40;
+    this.width = 100;
     this.subtreePorts = [];
     this.value = value;
 
@@ -41,6 +43,7 @@ export default class ASTNodeModel extends NodeModel {
 
   addPort<T extends DefaultPortModel>(port: T): T {
     super.addPort(port);
+    this.height += 20;
     this.subtreePorts.push(port);
     return port;
   }
