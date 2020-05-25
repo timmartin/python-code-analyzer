@@ -14,7 +14,7 @@ export class ASTNodeFactory extends AbstractReactFactory<ASTNodeModel, DiagramEn
     return <ASTNodeWidget node={event.model} engine={this.engine} />;
   }
 
-  generateModel() {
+  generateModel(): ASTNodeModel {
     return new ASTNodeModel();
   }
 }

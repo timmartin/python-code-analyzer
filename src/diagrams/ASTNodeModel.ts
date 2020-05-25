@@ -48,7 +48,7 @@ export default class ASTNodeModel extends NodeModel {
     return port;
   }
 
-  addSubtreePort(label: string) {
+  addSubtreePort(label: string): DefaultPortModel {
     const port = new DefaultPortModel({
       in: false,
       name: label,

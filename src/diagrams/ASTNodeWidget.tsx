@@ -7,7 +7,7 @@ interface Props {
   engine: DiagramEngine;
 }
 
-const ASTNodeWidget = (props: Props) => {
+const ASTNodeWidget: (props: Props) => React.ReactElement = (props: Props) => {
   return (
     <div className="ast-node">
       <PortWidget
