@@ -40,7 +40,7 @@
       .node-label {
         border-radius: 6px 6px 0 0;
         padding: 6px;
-        background: #55aaff;
+        background: #5af;
       }
 
       .input-port {
@@ -56,19 +56,19 @@
         padding: 6px;
         display: flex;
 
-        &>.link-label {
+        & > .link-label {
           flex-grow: 1;
         }
 
-        &>.port {
+        & > .port {
           flex-grow: 0;
         }
       }
 
       min-width: 100px;
       border-radius: 6px;
-      border: 1px solid #bbbbbb;
-      box-shadow: 2px 2px 2px #bbbbbb;
+      border: 1px solid #bbb;
+      box-shadow: 2px 2px 2px #bbb;
     }
   }
 }
