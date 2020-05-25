@@ -36,53 +36,74 @@ interface ASTBinOp {
 
 type ASTNode = ASTAssignment | ASTBinOp | ASTName | ASTNumber;
 
+// Function type for turning an AST node into entries on the diagram
+//
+// The function returns a tuple of:
+// - The diagram node that directly corresponds to the AST node
+// - An array of sub-nodes in the child tree
+// - An array of links in the child tree
+type NodeRenderer<T extends ASTNode> = (ast: T) => [ASTNodeModel, ASTNodeModel[], DefaultLinkModel[]];
+
 interface ParseTreeProps {
   ast: ASTNode[];
 }
 
-const makeNumberNode = (ast: ASTNumber) => {
-  return new ASTNodeModel("Number", Sk.ffi.remapToJs(ast.n).toString());
+const makeNumberNode: NodeRenderer<ASTNumber> = (ast) => {
+  return [new ASTNodeModel("Number", Sk.ffi.remapToJs(ast.n).toString()), [], []];
 };
 
-const makeNameNode = (ast: ASTName) => {
-  return new ASTNodeModel("Name", Sk.ffi.remapToJs(ast.id));
+const makeNameNode: NodeRenderer<ASTName> = (ast) => {
+  return [new ASTNodeModel("Name", Sk.ffi.remapToJs(ast.id)), [], []];
 };
 
-const makeBinOpNode = (ast: ASTBinOp) => {
-  const links: DefaultLinkModel[] = [];
+const makeBinOpNode: NodeRenderer<ASTBinOp> = (ast) => {
+  let links: DefaultLinkModel[] = [];
+  let childNodes: ASTNodeModel[] = [];
 
   const mainNode = new ASTNodeModel("Binary op");
   const leftPort = mainNode.addSubtreePort("Left");
   const rightPort = mainNode.addSubtreePort("Right");
 
-  const leftNode = makeASTNode(ast.left);
+  const [leftNode, leftChildNodes, leftChildLinks] = makeASTNode(ast.left);
+  childNodes.push(leftNode);
+  childNodes = childNodes.concat(leftChildNodes);
+  links = links.concat(leftChildLinks);
+
   links.push(leftPort.link<DefaultLinkModel>(leftNode.inPort));
 
-  const rightNode = makeASTNode(ast.right);
+  const [rightNode, rightChildNodes, rightChildLinks] = makeASTNode(ast.right);
+  childNodes.push(rightNode);
+  childNodes = childNodes.concat(rightChildNodes);
+  links = links.concat(rightChildLinks);
+
   links.push(rightPort.link<DefaultLinkModel>(rightNode.inPort));
 
-  return [mainNode, [leftNode, rightNode], links];
+  return [mainNode, childNodes, links];
 }
 
-const makeAssignmentNode = (ast: ASTAssignment) => {
+const makeAssignmentNode: NodeRenderer<ASTAssignment> = (ast) => {
   let links: DefaultLinkModel[] = [];
+  let additionalNodes: ASTNodeModel[] = [];
 
   const mainNode = new ASTNodeModel("Assign");
   const valuePort = mainNode.addSubtreePort("Value");
   const targetPort = mainNode.addSubtreePort("Target");
 
-  const [valueNode, additionalNodes, additionalLinks] = makeASTNode(ast.value);
-  links = links.concat(additionalLinks);
+  const [valueNode, valueChildNodes, valueChildLinks] = makeASTNode(ast.value);
+  additionalNodes = additionalNodes.concat(valueChildNodes);
+  links = links.concat(valueChildLinks);
   links.push(valuePort.link<DefaultLinkModel>(valueNode.inPort));
 
-  const targetNode = makeASTNode(ast.targets[0]);
+  const [targetNode, targetChildNodes, targetChildLinks] = makeASTNode(ast.targets[0]);
+  additionalNodes = additionalNodes.concat(targetChildNodes);
+  links = links.concat(targetChildLinks);
 
   links.push(targetPort.link<DefaultLinkModel>(targetNode.inPort));
 
-  return [[mainNode, valueNode, targetNode, ...additionalNodes], links];
+  return [mainNode, [valueNode, targetNode, ...additionalNodes], links];
 };
 
-const makeASTNode = (ast: ASTNode) => {
+const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   if (ast._astname === "Assign") {
     return makeAssignmentNode(ast);
   } else if (ast._astname === "BinOp") {
@@ -111,11 +132,10 @@ const ParseTree = ({ ast }: ParseTreeProps) => {
 
   const model = new DiagramModel();
 
-  if (ast[0]._astname === "Assign") {
-    const [nodes, links] = makeAssignmentNode(ast[0]);
-    nodes.forEach((node) => model.addNode(node));
-    links.forEach((link) => model.addLink(link));
-  }
+  const [node, childNodes, childLinks] = makeASTNode(ast[0]);
+  model.addNode(node);
+  childNodes.forEach((node) => model.addNode(node));
+  childLinks.forEach((link) => model.addLink(link));
 
   routingEngine.redistribute(model);
 
