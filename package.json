@@ -40,7 +40,7 @@
     "webpack": "^4.43.0"
   },
   "scripts": {
-    "build-ts": "tsc",
+    "build-ts": "tsc || true",
     "build-scss": "node-sass --output-style compressed -o lib src/*.scss",
     "build": "npm run build-ts && npm run build-scss",
     "lint": "npm run lint-ts && npm run lint-scss",
