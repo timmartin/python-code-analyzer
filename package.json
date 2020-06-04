@@ -30,11 +30,14 @@
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^2.5.1",
     "node-sass": "^4.14.1",
+    "react-dom": "^16.13.1",
+    "regenerator-runtime": "^0.13.5",
     "sass-loader": "^8.0.2",
     "stylelint": "^13.3.3",
     "stylelint-config-standard": "^20.0.0",
     "stylelint-scss": "^3.17.2",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "webpack": "^4.43.0"
   },
   "scripts": {
     "build-ts": "tsc",
@@ -48,13 +51,16 @@
   },
   "dependencies": {
     "@emotion/core": "^10.0.28",
-    "@projectstorm/react-diagrams": "^6.1.1",
+    "@emotion/styled": "^10.*",
+    "@projectstorm/react-diagrams": "^6.2.0",
     "closest": "^0.0.1",
     "dagre": "^0.8.5",
-    "mathjs": "^7.0.0",
+    "lodash": "^4.17.15",
+    "ml-matrix": "^6.5.0",
     "pathfinding": "^0.4.18",
     "paths-js": "^0.4.10",
     "react": "^16.13.1",
+    "resize-observer-polyfill": "^1.5.1",
     "skulpt": "^0.11.1"
   }
 }
