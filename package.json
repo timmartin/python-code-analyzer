@@ -4,7 +4,7 @@
   "description": "React tools to show live simulation and analysis of Python code",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "author": "Tim Martin",
+  "author": "Tim Martin <tim@asymptotic.co.uk>",
   "license": "MIT",
   "private": false,
   "files": [
@@ -66,5 +66,10 @@
     "react": "^16.13.1",
     "resize-observer-polyfill": "^1.5.1",
     "skulpt": "^0.11.1"
-  }
+  },
+  "keywords": [
+    "python",
+    "teaching",
+    "react-component"
+  ]
 }
