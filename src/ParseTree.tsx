@@ -45,7 +45,7 @@ type ASTNode = ASTAssignment | ASTBinOp | ASTName | ASTNumber;
 type NodeRenderer<T extends ASTNode> = (ast: T) => [ASTNodeModel, ASTNodeModel[], DefaultLinkModel[]];
 
 interface ParseTreeProps {
-  ast: ASTNode[];
+  code: string;
 }
 
 const makeNumberNode: NodeRenderer<ASTNumber> = (ast) => {
@@ -117,7 +117,10 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   }
 };
 
-const ParseTree = ({ ast }: ParseTreeProps) => {
+const ParseTree = ({code}: ParseTreeProps) => {
+  const parse = Sk.parse("<str>", code);
+  const ast = Sk.astFromParse(parse.cst, "<str>").body;
+
   const engine = createEngine();
   engine.getNodeFactories().registerFactory(new ASTNodeFactory());
 
