@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as Sk from "skulpt";
 
 import ParseTree from "../src/ParseTree";
 
