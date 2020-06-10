@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useMemo } from "react";
 import * as Sk from "skulpt";
 import createEngine, {
   DagreEngine,
@@ -42,14 +43,20 @@ type ASTNode = ASTAssignment | ASTBinOp | ASTName | ASTNumber;
 // - The diagram node that directly corresponds to the AST node
 // - An array of sub-nodes in the child tree
 // - An array of links in the child tree
-type NodeRenderer<T extends ASTNode> = (ast: T) => [ASTNodeModel, ASTNodeModel[], DefaultLinkModel[]];
+type NodeRenderer<T extends ASTNode> = (
+  ast: T
+) => [ASTNodeModel, ASTNodeModel[], DefaultLinkModel[]];
 
 interface ParseTreeProps {
   code: string;
 }
 
 const makeNumberNode: NodeRenderer<ASTNumber> = (ast) => {
-  return [new ASTNodeModel("Number", Sk.ffi.remapToJs(ast.n).toString()), [], []];
+  return [
+    new ASTNodeModel("Number", Sk.ffi.remapToJs(ast.n).toString()),
+    [],
+    [],
+  ];
 };
 
 const makeNameNode: NodeRenderer<ASTName> = (ast) => {
@@ -79,7 +86,7 @@ const makeBinOpNode: NodeRenderer<ASTBinOp> = (ast) => {
   links.push(rightPort.link<DefaultLinkModel>(rightNode.inPort));
 
   return [mainNode, childNodes, links];
-}
+};
 
 const makeAssignmentNode: NodeRenderer<ASTAssignment> = (ast) => {
   let links: DefaultLinkModel[] = [];
@@ -94,7 +101,9 @@ const makeAssignmentNode: NodeRenderer<ASTAssignment> = (ast) => {
   links = links.concat(valueChildLinks);
   links.push(valuePort.link<DefaultLinkModel>(valueNode.inPort));
 
-  const [targetNode, targetChildNodes, targetChildLinks] = makeASTNode(ast.targets[0]);
+  const [targetNode, targetChildNodes, targetChildLinks] = makeASTNode(
+    ast.targets[0]
+  );
   additionalNodes = additionalNodes.concat(targetChildNodes);
   links = links.concat(targetChildLinks);
 
@@ -117,21 +126,28 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   }
 };
 
-const ParseTree = ({code}: ParseTreeProps) => {
+const ParseTree = ({ code }: ParseTreeProps) => {
+  const engine = useMemo(() => {
+    const engine = createEngine();
+    engine.getNodeFactories().registerFactory(new ASTNodeFactory());
+    return engine;
+  }, []);
+
+  const routingEngine = useMemo(
+    () =>
+      new DagreEngine({
+        graph: {
+          rankDir: "LR",
+          marginx: 25,
+          marginy: 25,
+        },
+        includeLinks: true,
+      }),
+    []
+  );
+
   const parse = Sk.parse("<str>", code);
   const ast = Sk.astFromParse(parse.cst, "<str>").body;
-
-  const engine = createEngine();
-  engine.getNodeFactories().registerFactory(new ASTNodeFactory());
-
-  const routingEngine = new DagreEngine({
-    graph: {
-      rankDir: "LR",
-      marginx: 25,
-      marginy: 25,
-    },
-    includeLinks: true,
-  });
 
   const model = new DiagramModel();
 
