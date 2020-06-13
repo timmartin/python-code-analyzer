@@ -31,7 +31,6 @@
 
   &.parse-tree {
     height: 500px;
-    background-color: white;
     font-size: 16px;
 
     .block-diagram-canvas {
@@ -71,6 +70,7 @@
       border-radius: 6px;
       border: 1px solid #bbb;
       box-shadow: 2px 2px 2px #bbb;
+      background-color: white;
     }
   }
 }
