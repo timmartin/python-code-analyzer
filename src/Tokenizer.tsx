@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import * as Sk from "skulpt";
+import * as Sk from "skulpt/dist/skulpt";
 
 interface Props {
   editable?: boolean;
