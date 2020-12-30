@@ -65,7 +65,7 @@
     "paths-js": "^0.4.11",
     "react": "^16.14.0",
     "resize-observer-polyfill": "^1.5.1",
-    "skulpt": "^0.11.1"
+    "skulpt": "^1.0.0"
   },
   "keywords": [
     "python",
