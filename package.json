@@ -57,6 +57,7 @@
     "@emotion/core": "^10.1.1",
     "@emotion/styled": "^10.*",
     "@projectstorm/react-diagrams": "^6.3.0",
+    "@timmartin2/skulpt": "^1.2.1",
     "closest": "^0.0.1",
     "dagre": "^0.8.5",
     "lodash": "^4.17.20",
@@ -64,8 +65,7 @@
     "pathfinding": "^0.4.18",
     "paths-js": "^0.4.11",
     "react": "^16.14.0",
-    "resize-observer-polyfill": "^1.5.1",
-    "skulpt": "^1.0.0"
+    "resize-observer-polyfill": "^1.5.1"
   },
   "keywords": [
     "python",

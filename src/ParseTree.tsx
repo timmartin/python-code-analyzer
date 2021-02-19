@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useMemo } from "react";
-import * as Sk from "skulpt/dist/skulpt";
+import Sk from "@timmartin2/skulpt";
+
 import createEngine, {
   DagreEngine,
   DiagramModel,

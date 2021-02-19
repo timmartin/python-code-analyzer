@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import * as Sk from "skulpt/dist/skulpt";
+import Sk from "@timmartin2/skulpt";
 
 interface Props {
   editable?: boolean;
@@ -7,27 +7,27 @@ interface Props {
 }
 
 // Tokenize some Python code (using the tokenizer from the Skulpt library)
-const tokenize = (code: string, setOutput: (data: object[]) => void) => {
+const tokenize = (code: string, setOutput: (data: object[]) => void): void => {
   const tokens = [] as object[];
-
-  const tokenizer = new Sk.Tokenizer(
-    "<stdin>",
-    false,
-    (type, token, start, end, line) => {
-      tokens.push({
-        type: Sk.Tokenizer.tokenNames[type],
-        token,
-        start,
-        end,
-        line,
-      });
-    }
-  );
 
   const lines = code.split("\n").map((l: string) => `${l}\n`);
 
-  lines.forEach((line) => {
-    tokenizer.generateTokens(line);
+  const readline = (): string => {
+    if (lines.length === 0) {
+      throw new Sk.builtin.Exception("EOF");
+    }
+
+    return lines.pop();
+  };
+
+  Sk._tokenize("<stdin>", readline, "utf-8", (tokenInfo) => {
+    tokens.push({
+      type: tokenInfo.type,
+      token: tokenInfo.string,
+      start: tokenInfo.start,
+      end: tokenInfo.end,
+      line: tokenInfo.line,
+    });
   });
 
   setOutput(tokens);
