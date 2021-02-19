@@ -35,7 +35,10 @@ const tokenize = (code: string, setOutput: (data: object[]) => void) => {
 
 // The tokenizer takes some Python code, runs it through the tokenizer and
 // shows the output, to demonstrate how the tokenizer works.
-const Tokenizer = ({ initialCode, editable = true }: Props) => {
+const Tokenizer = ({
+  initialCode,
+  editable = true,
+}: Props): React.ReactNode => {
   const [output, setOutput] = useState([]);
   const [code, setCode] = useState(initialCode);
 
@@ -53,7 +56,7 @@ const Tokenizer = ({ initialCode, editable = true }: Props) => {
   let codeView: React.ReactElement;
   if (editable) {
     codeView = (
-      <textarea onChange={(e) => setCode(e.target.value)} value={code} />
+      <textarea onChange={(e): void => setCode(e.target.value)} value={code} />
     );
   } else {
     codeView = <pre>{initialCode}</pre>;
@@ -68,7 +71,7 @@ const Tokenizer = ({ initialCode, editable = true }: Props) => {
           <button
             type="button"
             className="execute"
-            onClick={() => tokenize(code, setOutput)}
+            onClick={(): void => tokenize(code, setOutput)}
           >
             Tokenize code
           </button>

@@ -7,6 +7,6 @@ export default {
   component: ParseTree,
 };
 
-export const Default = () => {
+export const Default = (): React.ReactNode => {
   return <ParseTree code="a = 42 + 1" />;
 };
