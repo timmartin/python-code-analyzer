@@ -36,7 +36,13 @@ interface ASTBinOp {
   right: ASTNode;
 }
 
-type ASTNode = ASTAssignment | ASTBinOp | ASTName | ASTNumber;
+interface ASTModule {
+  _astname: "Module";
+  body: ASTNode[];
+  docstring: string;
+}
+
+type ASTNode = ASTAssignment | ASTBinOp | ASTName | ASTNumber | ASTModule;
 
 // Function type for turning an AST node into entries on the diagram
 //
@@ -50,6 +56,7 @@ type NodeRenderer<T extends ASTNode> = (
 
 interface ParseTreeProps {
   code: string;
+  mode?: "module" | "statement";
 }
 
 const makeNumberNode: NodeRenderer<ASTNumber> = (ast) => {
@@ -89,6 +96,26 @@ const makeBinOpNode: NodeRenderer<ASTBinOp> = (ast) => {
   return [mainNode, childNodes, links];
 };
 
+const makeModuleNode: NodeRenderer<ASTModule> = (ast) => {
+  let links: DefaultLinkModel[] = [];
+  let childNodes: ASTNodeModel[] = [];
+
+  const mainNode = new ASTNodeModel("Module")
+  const bodyPort = mainNode.addSubtreePort("Body")
+
+  for (const entry of ast.body) {
+    const [entryNode, entryChildNodes, childLinks] = makeASTNode(entry);
+
+    links = links.concat(childLinks);
+    links.push(bodyPort.link<DefaultLinkModel>(entryNode.inPort));
+
+    childNodes.push(entryNode);
+    childNodes = childNodes.concat(entryChildNodes);
+  }
+
+  return [mainNode, childNodes, links];
+}
+
 const makeAssignmentNode: NodeRenderer<ASTAssignment> = (ast) => {
   let links: DefaultLinkModel[] = [];
   let additionalNodes: ASTNodeModel[] = [];
@@ -122,12 +149,14 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
     return makeNumberNode(ast);
   } else if (ast._astname === "Name") {
     return makeNameNode(ast);
+  } else if (ast._astname === "Module") {
+    return makeModuleNode(ast);
   } else {
     assertNever(ast);
   }
 };
 
-const ParseTree = ({ code }: ParseTreeProps) => {
+const ParseTree = ({ code, mode = "statement" }: ParseTreeProps) => {
   const engine = useMemo(() => {
     const engine = createEngine();
     engine.getNodeFactories().registerFactory(new ASTNodeFactory());
@@ -148,11 +177,14 @@ const ParseTree = ({ code }: ParseTreeProps) => {
   );
 
   const parse = Sk.parse("<str>", code);
-  const ast = Sk.astFromParse(parse.cst, "<str>").body;
+  var ast = Sk.astFromParse(parse.cst, "<str>");
+  if (mode === "statement") {
+    ast = ast.body[0];
+  }
 
   const model = new DiagramModel();
 
-  const [node, childNodes, childLinks] = makeASTNode(ast[0]);
+  const [node, childNodes, childLinks] = makeASTNode(ast);
   model.addNode(node);
   childNodes.forEach((node) => model.addNode(node));
   childLinks.forEach((link) => model.addLink(link));
