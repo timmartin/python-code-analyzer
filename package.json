@@ -51,7 +51,8 @@
     "lint-ts": "eslint src/**/*.ts src/**/*.tsx",
     "lint-scss": "stylelint src/**/*.scss",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@emotion/core": "^10.1.1",
