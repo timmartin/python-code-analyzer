@@ -15,3 +15,8 @@ export const Module = (): React.ReactNode  => {
   const code = "a = b + 1\nb = 3";
   return <ParseTree code={code} mode="module" />;
 };
+
+export const BoolOp = (): React.ReactNode => {
+  const code = "value = a and b and c";
+  return <ParseTree code={code} />;
+}

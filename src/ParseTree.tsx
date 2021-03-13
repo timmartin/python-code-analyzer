@@ -61,13 +61,25 @@ interface ASTOperator {
     | "FloorDiv";
 }
 
+interface ASTBooleanOperator {
+  _astname: "And" | "Or";
+}
+
+interface ASTBoolOp {
+  _astname: "BoolOp";
+  op: ASTNode;
+  values: ASTNode[];
+}
+
 type ASTNode =
   | ASTAssignment
   | ASTBinOp
   | ASTName
   | ASTNumber
   | ASTModule
-  | ASTOperator;
+  | ASTOperator
+  | ASTBoolOp
+  | ASTBooleanOperator;
 
 function isASTOperator(node: ASTNode): node is ASTOperator {
   return (
@@ -85,6 +97,10 @@ function isASTOperator(node: ASTNode): node is ASTOperator {
     node._astname === "BitAnd" ||
     node._astname === "FloorDiv"
   );
+}
+
+function isBooleanOperator(node: ASTNode): node is ASTBooleanOperator {
+  return node._astname === "And" || node._astname === "Or";
 }
 
 // Function type for turning an AST node into entries on the diagram
@@ -127,7 +143,9 @@ const makeBinOpNode: NodeRenderer<ASTBinOp> = (ast) => {
   // Skulpt parser doesn't do this, the node in the AST is the class and
   // not a constructed instance. Calling the constructor means we can
   // handle this more consistently in the recursive call.
-  const [operatorNode, operatorChildNodes, operatorChildLinks] = makeASTNode(new ast.op());
+  const [operatorNode, operatorChildNodes, operatorChildLinks] = makeASTNode(
+    new ast.op()
+  );
 
   childNodes.push(operatorNode);
   childNodes = childNodes.concat(operatorChildNodes);
@@ -196,10 +214,38 @@ const makeAssignmentNode: NodeRenderer<ASTAssignment> = (ast) => {
   return [mainNode, [valueNode, targetNode, ...additionalNodes], links];
 };
 
-const makeOperatorNode: NodeRenderer<ASTOperator> = (ast) => {
+const makeOperatorNode: NodeRenderer<ASTOperator | ASTBooleanOperator> = (ast) => {
   const node = new ASTNodeModel(ast._astname);
 
   return [node, [], []];
+};
+
+const makeBoolOpNode: NodeRenderer<ASTBoolOp> = (ast) => {
+  const node = new ASTNodeModel("Boolean Op");
+
+  let links: DefaultLinkModel[] = [];
+  let nodes: ASTNodeModel[] = [];
+
+  const [opNode, opChildNodes, opChildLinks] = makeASTNode(new ast.op());
+
+  nodes.push(opNode);
+  nodes = nodes.concat(opChildNodes);
+  links = links.concat(opChildLinks);
+
+  const operatorPort = node.addSubtreePort("Operator");
+  links.push(operatorPort.link(opNode.inPort));
+
+  ast.values.forEach((value, index) => {
+    const [valueNode, childNodes, childLinks] = makeASTNode(value);
+    nodes.push(valueNode);
+    const port = node.addSubtreePort(`value ${index}`);
+    links.push(port.link<DefaultLinkModel>(valueNode.inPort));
+
+    nodes = nodes.concat(childNodes);
+    links = links.concat(childLinks);
+  });
+
+  return [node, nodes, links];
 };
 
 const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
@@ -213,8 +259,10 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
     return makeNameNode(ast);
   } else if (ast._astname === "Module") {
     return makeModuleNode(ast);
-  } else if (isASTOperator(ast)) {
+  } else if (isASTOperator(ast) || isBooleanOperator(ast)) {
     return makeOperatorNode(ast);
+  } else if (ast._astname === "BoolOp") {
+    return makeBoolOpNode(ast);
   } else {
     assertNever(ast);
   }
