@@ -32,7 +32,7 @@ interface ASTName {
 interface ASTBinOp {
   _astname: "BinOp";
   left: ASTNode;
-  op: object;
+  op: ASTNode;
   right: ASTNode;
 }
 
@@ -42,7 +42,50 @@ interface ASTModule {
   docstring: string;
 }
 
-type ASTNode = ASTAssignment | ASTBinOp | ASTName | ASTNumber | ASTModule;
+// This combines together several different node types that are different
+// nodes in the AST, but are all rendered the same with a different name.
+interface ASTOperator {
+  _astname:
+    | "Add"
+    | "Sub"
+    | "Mult"
+    | "MatMult"
+    | "Div"
+    | "Mod"
+    | "Pow"
+    | "LShift"
+    | "RShift"
+    | "BitOr"
+    | "BitXor"
+    | "BitAnd"
+    | "FloorDiv";
+}
+
+type ASTNode =
+  | ASTAssignment
+  | ASTBinOp
+  | ASTName
+  | ASTNumber
+  | ASTModule
+  | ASTOperator;
+
+function isASTOperator(node: ASTNode): node is ASTOperator {
+  return (
+    node._astname === "Add" ||
+    node._astname === "Sub" ||
+    node._astname === "Mult" ||
+    node._astname === "MatMult" ||
+    node._astname === "Div" ||
+    node._astname === "Mod" ||
+    node._astname === "Pow" ||
+    node._astname === "LShift" ||
+    node._astname === "RShift" ||
+    node._astname === "BitOr" ||
+    node._astname === "BitXor" ||
+    node._astname === "BitAnd" ||
+    node._astname === "FloorDiv"
+  );
+}
 
 // Function type for turning an AST node into entries on the diagram
 //
@@ -76,8 +119,21 @@ const makeBinOpNode: NodeRenderer<ASTBinOp> = (ast) => {
   let childNodes: ASTNodeModel[] = [];
 
   const mainNode = new ASTNodeModel("Binary op");
+  const operatorPort = mainNode.addSubtreePort("Operator");
   const leftPort = mainNode.addSubtreePort("Left");
   const rightPort = mainNode.addSubtreePort("Right");
+
+  // We have to call the constructor on the operator object, because the
+  // Skulpt parser doesn't do this, the node in the AST is the class and
+  // not a constructed instance. Calling the constructor means we can
+  // handle this more consistently in the recursive call.
+  const [operatorNode, operatorChildNodes, operatorChildLinks] = makeASTNode(new ast.op());
+
+  childNodes.push(operatorNode);
+  childNodes = childNodes.concat(operatorChildNodes);
+  links = links.concat(operatorChildLinks);
+
+  links.push(operatorPort.link<DefaultLinkModel>(operatorNode.inPort));
 
   const [leftNode, leftChildNodes, leftChildLinks] = makeASTNode(ast.left);
   childNodes.push(leftNode);
@@ -100,8 +156,8 @@ const makeModuleNode: NodeRenderer<ASTModule> = (ast) => {
   let links: DefaultLinkModel[] = [];
   let childNodes: ASTNodeModel[] = [];
 
-  const mainNode = new ASTNodeModel("Module")
-  const bodyPort = mainNode.addSubtreePort("Body")
+  const mainNode = new ASTNodeModel("Module");
+  const bodyPort = mainNode.addSubtreePort("Body");
 
   for (const entry of ast.body) {
     const [entryNode, entryChildNodes, childLinks] = makeASTNode(entry);
@@ -114,7 +170,7 @@ const makeModuleNode: NodeRenderer<ASTModule> = (ast) => {
   }
 
   return [mainNode, childNodes, links];
-}
+};
 
 const makeAssignmentNode: NodeRenderer<ASTAssignment> = (ast) => {
   let links: DefaultLinkModel[] = [];
@@ -140,6 +196,12 @@ const makeAssignmentNode: NodeRenderer<ASTAssignment> = (ast) => {
   return [mainNode, [valueNode, targetNode, ...additionalNodes], links];
 };
 
+const makeOperatorNode: NodeRenderer<ASTOperator> = (ast) => {
+  const node = new ASTNodeModel(ast._astname);
+
+  return [node, [], []];
+};
+
 const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   if (ast._astname === "Assign") {
     return makeAssignmentNode(ast);
@@ -151,6 +213,8 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
     return makeNameNode(ast);
   } else if (ast._astname === "Module") {
     return makeModuleNode(ast);
+  } else if (isASTOperator(ast)) {
+    return makeOperatorNode(ast);
   } else {
     assertNever(ast);
   }
