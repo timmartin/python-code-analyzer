@@ -92,6 +92,13 @@ interface ASTCompareOp {
     | "NotIn";
 }
 
+interface ASTIf {
+  _astname: "If";
+  test: ASTNode;
+  body: ASTNode[];
+  orelse: ASTNode[];
+}
+
 type ASTNode =
   | ASTAssignment
   | ASTBinOp
@@ -102,7 +109,8 @@ type ASTNode =
   | ASTBoolOp
   | ASTBooleanOperator
   | ASTCompare
-  | ASTCompareOp;
+  | ASTCompareOp
+  | ASTIf;
 
 function isASTOperator(node: ASTNode): node is ASTOperator {
   return (
@@ -335,6 +343,49 @@ const makeCompareNode: NodeRenderer<ASTCompare> = (ast) => {
   return [node, nodes, links];
 };
 
+const makeIfNode: NodeRenderer<ASTIf> = (ast) => {
+  const node = new ASTNodeModel("If");
+
+  let links: DefaultLinkModel[] = [];
+  let nodes: ASTNodeModel[] = [];
+
+  const [testNode, testChildNodes, testChildLinks] = makeASTNode(ast.test);
+
+  nodes.push(testNode);
+  nodes = nodes.concat(testChildNodes);
+  links = links.concat(testChildLinks);
+
+  const testPort = node.addSubtreePort("Test");
+  links.push(testPort.link(testNode.inPort));
+
+  const bodyPort = node.addSubtreePort("Body");
+  ast.body.forEach((statement) => {
+    const [statementNode, statementChildNodes, statementChildLinks] = makeASTNode(statement);
+
+    nodes.push(statementNode);
+    nodes = nodes.concat(statementChildNodes);
+    links = links.concat(statementChildLinks);
+
+    links.push(bodyPort.link(statementNode.inPort));
+  });
+
+  if (ast.orelse.length > 0) {
+    const elsePort = node.addSubtreePort("OrElse");
+
+    ast.orelse.forEach((statement) => {
+      const [statementNode, statementChildNodes, statementChildLinks] = makeASTNode(statement);
+
+      nodes.push(statementNode);
+      nodes = nodes.concat(statementChildNodes);
+      links = links.concat(statementChildLinks);
+
+      links.push(elsePort.link(statementNode.inPort));
+    });
+  }
+
+  return [node, nodes, links];
+}
+
 const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   if (ast._astname === "Assign") {
     return makeAssignmentNode(ast);
@@ -346,12 +397,18 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
     return makeNameNode(ast);
   } else if (ast._astname === "Module") {
     return makeModuleNode(ast);
-  } else if (isASTOperator(ast) || isBooleanOperator(ast) || isCompareOperator(ast)) {
+  } else if (
+    isASTOperator(ast) ||
+    isBooleanOperator(ast) ||
+    isCompareOperator(ast)
+  ) {
     return makeOperatorNode(ast);
   } else if (ast._astname === "BoolOp") {
     return makeBoolOpNode(ast);
   } else if (ast._astname === "Compare") {
     return makeCompareNode(ast);
+  } else if (ast._astname === "If") {
+    return makeIfNode(ast);
   } else {
     assertNever(ast);
   }

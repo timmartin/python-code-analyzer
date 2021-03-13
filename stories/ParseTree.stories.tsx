@@ -25,3 +25,8 @@ export const Comparison = (): React.ReactNode => {
   const code = "value = a < 3 < b";
   return <ParseTree code={code} />;
 }
+
+export const IfBlock = (): React.ReactNode => {
+  const code = "if a < b:\n    a = 1\nelse:\n    b = 1";
+  return <ParseTree code={code} mode="module" />;
+}
