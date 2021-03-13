@@ -71,6 +71,27 @@ interface ASTBoolOp {
   values: ASTNode[];
 }
 
+interface ASTCompare {
+  _astname: "Compare";
+  left: ASTNode;
+  ops: ASTNode[];
+  comparators: ASTNode[];
+}
+
+interface ASTCompareOp {
+  _astname:
+    | "Eq"
+    | "NotEq"
+    | "Lt"
+    | "LtE"
+    | "Gt"
+    | "GtE"
+    | "Is"
+    | "IsNot"
+    | "In"
+    | "NotIn";
+}
+
 type ASTNode =
   | ASTAssignment
   | ASTBinOp
@@ -79,7 +100,9 @@ type ASTNode =
   | ASTModule
   | ASTOperator
   | ASTBoolOp
-  | ASTBooleanOperator;
+  | ASTBooleanOperator
+  | ASTCompare
+  | ASTCompareOp;
 
 function isASTOperator(node: ASTNode): node is ASTOperator {
   return (
@@ -101,6 +124,21 @@ function isASTOperator(node: ASTNode): node is ASTOperator {
 
 function isBooleanOperator(node: ASTNode): node is ASTBooleanOperator {
   return node._astname === "And" || node._astname === "Or";
+}
+
+function isCompareOperator(node: ASTNode): node is ASTCompareOp {
+  return (
+    node._astname === "Eq" ||
+    node._astname === "NotEq" ||
+    node._astname === "Lt" ||
+    node._astname === "LtE" ||
+    node._astname === "Gt" ||
+    node._astname === "GtE" ||
+    node._astname === "Is" ||
+    node._astname === "IsNot" ||
+    node._astname === "In" ||
+    node._astname === "NotIn"
+  );
 }
 
 // Function type for turning an AST node into entries on the diagram
@@ -214,7 +252,9 @@ const makeAssignmentNode: NodeRenderer<ASTAssignment> = (ast) => {
   return [mainNode, [valueNode, targetNode, ...additionalNodes], links];
 };
 
-const makeOperatorNode: NodeRenderer<ASTOperator | ASTBooleanOperator> = (ast) => {
+const makeOperatorNode: NodeRenderer<
+  ASTOperator | ASTBooleanOperator | ASTCompareOp
+> = (ast) => {
   const node = new ASTNodeModel(ast._astname);
 
   return [node, [], []];
@@ -248,6 +288,53 @@ const makeBoolOpNode: NodeRenderer<ASTBoolOp> = (ast) => {
   return [node, nodes, links];
 };
 
+const makeCompareNode: NodeRenderer<ASTCompare> = (ast) => {
+  const node = new ASTNodeModel("Comparison");
+
+  let links: DefaultLinkModel[] = [];
+  let nodes: ASTNodeModel[] = [];
+
+  const [leftNode, leftChildNodes, leftChildLinks] = makeASTNode(ast.left);
+
+  nodes.push(leftNode);
+  nodes = nodes.concat(leftChildNodes);
+  links = links.concat(leftChildLinks);
+
+  const leftPort = node.addSubtreePort("Left");
+  links.push(leftPort.link(leftNode.inPort));
+
+  ast.comparators.forEach((comparator, index) => {
+    const port = node.addSubtreePort(`Comparator ${index}`);
+
+    const [
+      comparatorNode,
+      comparatorChildNodes,
+      comparatorChildLinks,
+    ] = makeASTNode(comparator);
+    nodes.push(comparatorNode);
+    nodes = nodes.concat(comparatorChildNodes);
+    links = links.concat(comparatorChildLinks);
+
+    links.push(port.link(comparatorNode.inPort));
+  });
+
+  ast.ops.forEach((operator, index) => {
+    const port = node.addSubtreePort(`Operator ${index}`);
+
+    const [operatorNode, operatorChildNodes, operatorChildLinks] = makeASTNode(
+      new operator()
+    );
+
+    nodes.push(operatorNode);
+    nodes = nodes.concat(operatorChildNodes);
+    links = links.concat(operatorChildLinks);
+
+    links.push(port.link(operatorNode.inPort));
+  });
+
+  return [node, nodes, links];
+};
+
 const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   if (ast._astname === "Assign") {
     return makeAssignmentNode(ast);
@@ -259,10 +346,12 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
     return makeNameNode(ast);
   } else if (ast._astname === "Module") {
     return makeModuleNode(ast);
-  } else if (isASTOperator(ast) || isBooleanOperator(ast)) {
+  } else if (isASTOperator(ast) || isBooleanOperator(ast) || isCompareOperator(ast)) {
     return makeOperatorNode(ast);
   } else if (ast._astname === "BoolOp") {
     return makeBoolOpNode(ast);
+  } else if (ast._astname === "Compare") {
+    return makeCompareNode(ast);
   } else {
     assertNever(ast);
   }

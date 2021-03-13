@@ -20,3 +20,8 @@ export const BoolOp = (): React.ReactNode => {
   const code = "value = a and b and c";
   return <ParseTree code={code} />;
 }
+
+export const Comparison = (): React.ReactNode => {
+  const code = "value = a < 3 < b";
+  return <ParseTree code={code} />;
+}
