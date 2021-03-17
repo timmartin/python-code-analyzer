@@ -32,7 +32,7 @@ interface ASTName {
 interface ASTBinOp {
   _astname: "BinOp";
   left: ASTNode;
-  op: ASTNode;
+  op: typeof OperatorClass;
   right: ASTNode;
 }
 
@@ -42,54 +42,74 @@ interface ASTModule {
   docstring: string;
 }
 
+type OperatorASTName =
+  | "Add"
+  | "Sub"
+  | "Mult"
+  | "MatMult"
+  | "Div"
+  | "Mod"
+  | "Pow"
+  | "LShift"
+  | "RShift"
+  | "BitOr"
+  | "BitXor"
+  | "BitAnd"
+  | "FloorDiv";
+
 // This combines together several different node types that are different
 // nodes in the AST, but are all rendered the same with a different name.
 interface ASTOperator {
-  _astname:
-    | "Add"
-    | "Sub"
-    | "Mult"
-    | "MatMult"
-    | "Div"
-    | "Mod"
-    | "Pow"
-    | "LShift"
-    | "RShift"
-    | "BitOr"
-    | "BitXor"
-    | "BitAnd"
-    | "FloorDiv";
+  _astname: OperatorASTName;
+}
+
+// This is a bit of a hack. The AST produced by Skulpt contains either objects
+// or classes, depending on the node type; in the case of simple nodes with no
+// members, the class is inserted into the AST. In order to represent the type
+// of this, we declare our own class and pretend that we have one of those.
+class OperatorClass implements ASTOperator {
+  _astname: OperatorASTName;
 }
 
 interface ASTBooleanOperator {
   _astname: "And" | "Or";
 }
 
+class BooleanOperatorClass implements ASTBooleanOperator {
+  _astname: "And" | "Or";
+}
+
 interface ASTBoolOp {
   _astname: "BoolOp";
-  op: ASTNode;
+  op: typeof BooleanOperatorClass;
   values: ASTNode[];
+}
+
+type CompareASTName =
+  | "Eq"
+  | "NotEq"
+  | "Lt"
+  | "LtE"
+  | "Gt"
+  | "GtE"
+  | "Is"
+  | "IsNot"
+  | "In"
+  | "NotIn";
+
+interface ASTCompareOp {
+  _astname: CompareASTName;
+}
+
+class CompareOperatorClass implements ASTCompareOp {
+  _astname: CompareASTName;
 }
 
 interface ASTCompare {
   _astname: "Compare";
   left: ASTNode;
-  ops: ASTNode[];
+  ops: (typeof CompareOperatorClass)[];
   comparators: ASTNode[];
-}
-
-interface ASTCompareOp {
-  _astname:
-    | "Eq"
-    | "NotEq"
-    | "Lt"
-    | "LtE"
-    | "Gt"
-    | "GtE"
-    | "Is"
-    | "IsNot"
-    | "In"
-    | "NotIn";
 }
 
 interface ASTIf {
@@ -360,7 +380,11 @@ const makeIfNode: NodeRenderer<ASTIf> = (ast) => {
 
   const bodyPort = node.addSubtreePort("Body");
   ast.body.forEach((statement) => {
-    const [statementNode, statementChildNodes, statementChildLinks] = makeASTNode(statement);
+    const [
+      statementNode,
+      statementChildNodes,
+      statementChildLinks,
+    ] = makeASTNode(statement);
 
     nodes.push(statementNode);
     nodes = nodes.concat(statementChildNodes);
@@ -373,7 +397,11 @@ const makeIfNode: NodeRenderer<ASTIf> = (ast) => {
     const elsePort = node.addSubtreePort("OrElse");
 
     ast.orelse.forEach((statement) => {
-      const [statementNode, statementChildNodes, statementChildLinks] = makeASTNode(statement);
+      const [
+        statementNode,
+        statementChildNodes,
+        statementChildLinks,
+      ] = makeASTNode(statement);
 
       nodes.push(statementNode);
       nodes = nodes.concat(statementChildNodes);
@@ -384,7 +412,7 @@ const makeIfNode: NodeRenderer<ASTIf> = (ast) => {
   }
 
   return [node, nodes, links];
-}
+};
 
 const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   if (ast._astname === "Assign") {
