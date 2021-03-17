@@ -23,7 +23,7 @@
     "@storybook/addon-links": "^5.3.21",
     "@storybook/addons": "^5.3.21",
     "@storybook/preset-typescript": "^3.0.0",
-    "@storybook/react": "^5.3.21",
+    "@storybook/react": "^6.1.0",
     "@types/react": "^16.14.2",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
@@ -54,7 +54,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@emotion/core": "^11.0.0",
+    "@emotion/react": "^11.0.0",
     "@emotion/styled": "^11.*",
     "@projectstorm/react-diagrams": "^6.4.2",
     "@timmartin2/skulpt": "^1.2.1",

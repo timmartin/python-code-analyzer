@@ -3,7 +3,6 @@ module.exports = {
   addons: [
     "@storybook/addon-actions",
     "@storybook/addon-links",
-    "@storybook/preset-typescript",
   ],
   webpackFinal: async (config, { configType }) => {
     config.module.rules.push({
