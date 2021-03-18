@@ -119,6 +119,21 @@ interface ASTIf {
   orelse: ASTNode[];
 }
 
+interface ASTFunctionDef {
+  _astname: "FunctionDef";
+  name: string;
+  args: ASTNode[];
+  body: ASTNode[];
+  decorator_list: ASTNode[];
+  returns: ASTNode;
+  docstring: string;
+}
+
+interface ASTReturn {
+  _astname: "Return";
+  value: ASTNode;
+}
+
 type ASTNode =
   | ASTAssignment
   | ASTBinOp
@@ -130,7 +145,9 @@ type ASTNode =
   | ASTBooleanOperator
   | ASTCompare
   | ASTCompareOp
-  | ASTIf;
+  | ASTIf
+  | ASTFunctionDef
+  | ASTReturn;
 
 function isASTOperator(node: ASTNode): node is ASTOperator {
   return (
@@ -397,6 +414,40 @@ const makeIfNode: NodeRenderer<ASTIf> = (ast) => {
   return [node, nodes, links];
 };
 
+const makeFunctionDefNode: NodeRenderer<ASTFunctionDef> = (ast) => {
+  const node = new ASTNodeModel("FunctionDef");
+
+  const childNodes: ASTNodeModel[][] = [];
+  const childLinks: DefaultLinkModel[][] = [];
+
+  node.addSubtreePort(`Name: ${Sk.ffi.remapToJs(ast.name)}`);
+
+  const bodyPort = node.addSubtreePort("Body");
+
+  ast.body.forEach((statement) => {
+    const [statementNode, statementChildNodes, statementChildLinks] = makeASTNode(statement);
+
+    childNodes.push([statementNode]);
+    childNodes.push(statementChildNodes);
+    childLinks.push(statementChildLinks);
+
+    childLinks.push([bodyPort.link(statementNode.inPort)]);
+  })
+
+  return [node, joinArrays(childNodes), joinArrays(childLinks)];
+};
+
+const makeReturnNode: NodeRenderer<ASTReturn> = (ast) => {
+  const node = new ASTNodeModel("Return");
+
+  const childNodes: ASTNodeModel[][] = [];
+  const childLinks: DefaultLinkModel[][] = [];
+
+  makeSubTree(node, ast.value, "Value", childNodes, childLinks);
+
+  return [node, joinArrays(childNodes), joinArrays(childLinks)];
+}
+
 const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   if (ast._astname === "Assign") {
     return makeAssignmentNode(ast);
@@ -420,6 +471,10 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
     return makeCompareNode(ast);
   } else if (ast._astname === "If") {
     return makeIfNode(ast);
+  } else if (ast._astname === "FunctionDef") {
+    return makeFunctionDefNode(ast);
+  } else if (ast._astname === "Return") {
+    return makeReturnNode(ast);
   } else {
     assertNever(ast);
   }

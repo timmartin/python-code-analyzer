@@ -30,3 +30,8 @@ export const IfBlock = (): React.ReactNode => {
   const code = "if a < b:\n    a = 1\nelse:\n    b = 1";
   return <ParseTree code={code} mode="module" />;
 }
+
+export const FunctionDef = (): React.ReactNode => {
+  const code = "def foo(bar):\n    return 42"
+  return <ParseTree code={code} />;
+}
