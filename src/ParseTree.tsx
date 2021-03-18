@@ -9,7 +9,7 @@ import createEngine, {
 } from "@projectstorm/react-diagrams";
 import { CanvasWidget } from "@projectstorm/react-canvas-core";
 
-import { assertNever } from "./utils";
+import { assertNever, joinArrays } from "./utils";
 import { ASTNodeFactory } from "./diagrams/ASTNodeFactory";
 import ASTNodeModel from "./diagrams/ASTNodeModel";
 
@@ -108,7 +108,7 @@ class CompareOperatorClass implements ASTCompareOp {
 interface ASTCompare {
   _astname: "Compare";
   left: ASTNode;
-  ops: (typeof CompareOperatorClass)[];
+  ops: typeof CompareOperatorClass[];
   comparators: ASTNode[];
 }
 
@@ -184,6 +184,28 @@ interface ParseTreeProps {
   mode?: "module" | "statement";
 }
 
+function makeSubTree(
+  parentNode: ASTNodeModel,
+  astNode: ASTNode,
+  label: string,
+  childNodes: ASTNodeModel[][],
+  childLinks: DefaultLinkModel[][]
+): void {
+  const port = parentNode.addSubtreePort(label);
+
+  const [
+    comparatorNode,
+    comparatorChildNodes,
+    comparatorChildLinks,
+  ] = makeASTNode(astNode);
+
+  childNodes.push([comparatorNode]);
+  childNodes.push(comparatorChildNodes);
+
+  childLinks.push([port.link(comparatorNode.inPort)]);
+  childLinks.push(comparatorChildLinks);
+}
+
 const makeNumberNode: NodeRenderer<ASTNumber> = (ast) => {
   return [
     new ASTNodeModel("Number", Sk.ffi.remapToJs(ast.n).toString()),
@@ -257,27 +279,15 @@ const makeModuleNode: NodeRenderer<ASTModule> = (ast) => {
 };
 
 const makeAssignmentNode: NodeRenderer<ASTAssignment> = (ast) => {
-  let links: DefaultLinkModel[] = [];
-  let additionalNodes: ASTNodeModel[] = [];
+  const links: DefaultLinkModel[][] = [];
+  const nodes: ASTNodeModel[][] = [];
 
   const mainNode = new ASTNodeModel("Assign");
-  const valuePort = mainNode.addSubtreePort("Value");
-  const targetPort = mainNode.addSubtreePort("Target");
 
-  const [valueNode, valueChildNodes, valueChildLinks] = makeASTNode(ast.value);
-  additionalNodes = additionalNodes.concat(valueChildNodes);
-  links = links.concat(valueChildLinks);
-  links.push(valuePort.link<DefaultLinkModel>(valueNode.inPort));
+  makeSubTree(mainNode, ast.value, "Value", nodes, links);
+  makeSubTree(mainNode, ast.targets[0], "Target", nodes, links);
 
-  const [targetNode, targetChildNodes, targetChildLinks] = makeASTNode(
-    ast.targets[0]
-  );
-  additionalNodes = additionalNodes.concat(targetChildNodes);
-  links = links.concat(targetChildLinks);
-
-  links.push(targetPort.link<DefaultLinkModel>(targetNode.inPort));
-
-  return [mainNode, [valueNode, targetNode, ...additionalNodes], links];
+  return [mainNode, joinArrays(nodes), joinArrays(links)];
 };
 
 const makeOperatorNode: NodeRenderer<
@@ -291,76 +301,49 @@ const makeOperatorNode: NodeRenderer<
 const makeBoolOpNode: NodeRenderer<ASTBoolOp> = (ast) => {
   const node = new ASTNodeModel("Boolean Op");
 
-  let links: DefaultLinkModel[] = [];
-  let nodes: ASTNodeModel[] = [];
+  const links: DefaultLinkModel[][] = [];
+  const nodes: ASTNodeModel[][] = [];
 
   const [opNode, opChildNodes, opChildLinks] = makeASTNode(new ast.op());
 
-  nodes.push(opNode);
-  nodes = nodes.concat(opChildNodes);
-  links = links.concat(opChildLinks);
+  nodes.push([opNode]);
+  nodes.push(opChildNodes);
+  links.push(opChildLinks);
 
   const operatorPort = node.addSubtreePort("Operator");
-  links.push(operatorPort.link(opNode.inPort));
+  links.push([operatorPort.link(opNode.inPort)]);
 
   ast.values.forEach((value, index) => {
-    const [valueNode, childNodes, childLinks] = makeASTNode(value);
-    nodes.push(valueNode);
-    const port = node.addSubtreePort(`value ${index}`);
-    links.push(port.link<DefaultLinkModel>(valueNode.inPort));
-
-    nodes = nodes.concat(childNodes);
-    links = links.concat(childLinks);
+    makeSubTree(node, value, `value ${index}`, nodes, links);
   });
 
-  return [node, nodes, links];
+  return [node, joinArrays(nodes), joinArrays(links)];
 };
 
 const makeCompareNode: NodeRenderer<ASTCompare> = (ast) => {
   const node = new ASTNodeModel("Comparison");
 
-  let links: DefaultLinkModel[] = [];
-  let nodes: ASTNodeModel[] = [];
+  const links: DefaultLinkModel[][] = [];
+  const nodes: ASTNodeModel[][] = [];
 
   const [leftNode, leftChildNodes, leftChildLinks] = makeASTNode(ast.left);
 
-  nodes.push(leftNode);
-  nodes = nodes.concat(leftChildNodes);
-  links = links.concat(leftChildLinks);
+  nodes.push([leftNode]);
+  nodes.push(leftChildNodes);
+  links.push(leftChildLinks);
 
   const leftPort = node.addSubtreePort("Left");
-  links.push(leftPort.link(leftNode.inPort));
+  links.push([leftPort.link(leftNode.inPort)]);
 
   ast.comparators.forEach((comparator, index) => {
-    const port = node.addSubtreePort(`Comparator ${index}`);
-
-    const [
-      comparatorNode,
-      comparatorChildNodes,
-      comparatorChildLinks,
-    ] = makeASTNode(comparator);
-    nodes.push(comparatorNode);
-    nodes = nodes.concat(comparatorChildNodes);
-    links = links.concat(comparatorChildLinks);
-
-    links.push(port.link(comparatorNode.inPort));
+    makeSubTree(node, comparator, `Comparator ${index}`, nodes, links);
   });
 
   ast.ops.forEach((operator, index) => {
-    const port = node.addSubtreePort(`Operator ${index}`);
-
-    const [operatorNode, operatorChildNodes, operatorChildLinks] = makeASTNode(
-      new operator()
-    );
-
-    nodes.push(operatorNode);
-    nodes = nodes.concat(operatorChildNodes);
-    links = links.concat(operatorChildLinks);
-
-    links.push(port.link(operatorNode.inPort));
+    makeSubTree(node, new operator(), `Operator ${index}`, nodes, links);
   });
 
-  return [node, nodes, links];
+  return [node, joinArrays(nodes), joinArrays(links)];
 };
 
 const makeIfNode: NodeRenderer<ASTIf> = (ast) => {
