@@ -129,6 +129,16 @@ interface ASTFunctionDef {
   docstring: string;
 }
 
+interface ASTAsyncFunctionDef {
+  _astname: "AsyncFunctionDef";
+  name: string;
+  args: ASTNode[];
+  body: ASTNode[];
+  decorator_list: ASTNode[];
+  returns: ASTNode;
+  docstring: string;
+}
+
 interface ASTReturn {
   _astname: "Return";
   value: ASTNode;
@@ -147,6 +157,7 @@ type ASTNode =
   | ASTCompareOp
   | ASTIf
   | ASTFunctionDef
+  | ASTAsyncFunctionDef
   | ASTReturn;
 
 function isASTOperator(node: ASTNode): node is ASTOperator {
@@ -414,8 +425,10 @@ const makeIfNode: NodeRenderer<ASTIf> = (ast) => {
   return [node, nodes, links];
 };
 
-const makeFunctionDefNode: NodeRenderer<ASTFunctionDef> = (ast) => {
-  const node = new ASTNodeModel("FunctionDef");
+const makeFunctionDefNode: NodeRenderer<
+  ASTFunctionDef | ASTAsyncFunctionDef
+> = (ast) => {
+  const node = new ASTNodeModel(ast._astname);
 
   const childNodes: ASTNodeModel[][] = [];
   const childLinks: DefaultLinkModel[][] = [];
@@ -425,14 +438,18 @@ const makeFunctionDefNode: NodeRenderer<ASTFunctionDef> = (ast) => {
   const bodyPort = node.addSubtreePort("Body");
 
   ast.body.forEach((statement) => {
-    const [statementNode, statementChildNodes, statementChildLinks] = makeASTNode(statement);
+    const [
+      statementNode,
+      statementChildNodes,
+      statementChildLinks,
+    ] = makeASTNode(statement);
 
     childNodes.push([statementNode]);
     childNodes.push(statementChildNodes);
     childLinks.push(statementChildLinks);
 
     childLinks.push([bodyPort.link(statementNode.inPort)]);
-  })
+  });
 
   return [node, joinArrays(childNodes), joinArrays(childLinks)];
 };
@@ -446,7 +463,7 @@ const makeReturnNode: NodeRenderer<ASTReturn> = (ast) => {
   makeSubTree(node, ast.value, "Value", childNodes, childLinks);
 
   return [node, joinArrays(childNodes), joinArrays(childLinks)];
-}
+};
 
 const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   if (ast._astname === "Assign") {
@@ -471,7 +488,10 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
     return makeCompareNode(ast);
   } else if (ast._astname === "If") {
     return makeIfNode(ast);
-  } else if (ast._astname === "FunctionDef") {
+  } else if (
+    ast._astname === "FunctionDef" ||
+    ast._astname === "AsyncFunctionDef"
+  ) {
     return makeFunctionDefNode(ast);
   } else if (ast._astname === "Return") {
     return makeReturnNode(ast);
