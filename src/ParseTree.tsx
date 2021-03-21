@@ -500,7 +500,7 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   }
 };
 
-const ParseTree = ({ code, mode = "statement" }: ParseTreeProps) => {
+const ParseTree = ({ code, mode = "statement" }: ParseTreeProps): React.ReactNode => {
   const engine = useMemo(() => {
     const engine = createEngine();
     engine.getNodeFactories().registerFactory(new ASTNodeFactory());
@@ -521,7 +521,7 @@ const ParseTree = ({ code, mode = "statement" }: ParseTreeProps) => {
   );
 
   const parse = Sk.parse("<str>", code);
-  var ast = Sk.astFromParse(parse.cst, "<str>");
+  let ast = Sk.astFromParse(parse.cst, "<str>");
   if (mode === "statement") {
     ast = ast.body[0];
   }
