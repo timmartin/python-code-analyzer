@@ -10,192 +10,88 @@ import createEngine, {
 import { CanvasWidget } from "@projectstorm/react-canvas-core";
 
 import { assertNever, joinArrays } from "./utils";
+import {
+  ASTAnnAssign,
+  ASTAssert,
+  ASTAssign,
+  ASTAsyncFor,
+  ASTAsyncFunctionDef,
+  ASTAsyncWith,
+  ASTAttribute,
+  ASTAugAssign,
+  ASTAugLoad,
+  ASTAugStore,
+  ASTAwait,
+  ASTBinOp,
+  ASTBooleanOperator,
+  ASTBoolOp,
+  ASTBreak,
+  ASTBytes,
+  ASTCall,
+  ASTClassDef,
+  ASTCompare,
+  ASTCompareOp,
+  ASTConstant,
+  ASTContinue,
+  ASTDel,
+  ASTDelete,
+  ASTDict,
+  ASTDictComp,
+  ASTEllipsis,
+  ASTExpr,
+  ASTExpression,
+  ASTExtSlice,
+  ASTFor,
+  ASTFormattedValue,
+  ASTFunctionDef,
+  ASTGeneratorExp,
+  ASTGlobal,
+  ASTIf,
+  ASTIfExp,
+  ASTImport,
+  ASTImportFrom,
+  ASTIndex,
+  ASTInteractive,
+  ASTJoinedStr,
+  ASTLambda,
+  ASTList,
+  ASTListComp,
+  ASTLoad,
+  ASTModule,
+  ASTName,
+  ASTNameConstant,
+  ASTNode,
+  ASTNonLocal,
+  ASTNum,
+  ASTOperator,
+  ASTParam,
+  ASTPass,
+  ASTPrint,
+  ASTRaise,
+  ASTReturn,
+  ASTSet,
+  ASTSetComp,
+  ASTSlice,
+  ASTStarred,
+  ASTStore,
+  ASTStr,
+  ASTSubscript,
+  ASTSuite,
+  ASTTry,
+  ASTTuple,
+  ASTUnaryOp,
+  ASTUnaryOperator,
+  ASTWhile,
+  ASTWith,
+  ASTYield,
+  ASTYieldFrom,
+  isASTOperator,
+  isBooleanOperator,
+  isCompareOperator,
+  isUnaryOperator,
+} from "./ast";
 import { ASTNodeFactory } from "./diagrams/ASTNodeFactory";
 import ASTNodeModel from "./diagrams/ASTNodeModel";
-
-interface ASTAssignment {
-  _astname: "Assign";
-  value: ASTNode;
-  targets: ASTNode[];
-}
-
-interface ASTNumber {
-  _astname: "Num";
-  n: object;
-}
-
-interface ASTName {
-  _astname: "Name";
-  id: object;
-}
-
-interface ASTBinOp {
-  _astname: "BinOp";
-  left: ASTNode;
-  op: typeof OperatorClass;
-  right: ASTNode;
-}
-
-interface ASTModule {
-  _astname: "Module";
-  body: ASTNode[];
-  docstring: string;
-}
-
-type OperatorASTName =
-  | "Add"
-  | "Sub"
-  | "Mult"
-  | "MatMult"
-  | "Div"
-  | "Mod"
-  | "Pow"
-  | "LShift"
-  | "RShift"
-  | "BitOr"
-  | "BitXor"
-  | "BitAnd"
-  | "FloorDiv";
-
-// This combines together several different node types that are different
-// nodes in the AST, but are all rendered the same with a different name.
-interface ASTOperator {
-  _astname: OperatorASTName;
-}
-
-// This is a bit of a hack. The AST produced by Skulpt contains either objects
-// or classes, depending on the node type; in the case of simple nodes with no
-// members, the class is inserted into the AST. In order to represent the type
-// of this, we declare our own class and pretend that we have one of those.
-class OperatorClass implements ASTOperator {
-  _astname: OperatorASTName;
-}
-
-interface ASTBooleanOperator {
-  _astname: "And" | "Or";
-}
-
-class BooleanOperatorClass implements ASTBooleanOperator {
-  _astname: "And" | "Or";
-}
-
-interface ASTBoolOp {
-  _astname: "BoolOp";
-  op: typeof BooleanOperatorClass;
-  values: ASTNode[];
-}
-
-type CompareASTName =
-  | "Eq"
-  | "NotEq"
-  | "Lt"
-  | "LtE"
-  | "Gt"
-  | "GtE"
-  | "Is"
-  | "IsNot"
-  | "In"
-  | "NotIn";
-
-interface ASTCompareOp {
-  _astname: CompareASTName;
-}
-
-class CompareOperatorClass implements ASTCompareOp {
-  _astname: CompareASTName;
-}
-
-interface ASTCompare {
-  _astname: "Compare";
-  left: ASTNode;
-  ops: typeof CompareOperatorClass[];
-  comparators: ASTNode[];
-}
-
-interface ASTIf {
-  _astname: "If";
-  test: ASTNode;
-  body: ASTNode[];
-  orelse: ASTNode[];
-}
-
-interface ASTFunctionDef {
-  _astname: "FunctionDef";
-  name: string;
-  args: ASTNode[];
-  body: ASTNode[];
-  decorator_list: ASTNode[];
-  returns: ASTNode;
-  docstring: string;
-}
-
-interface ASTAsyncFunctionDef {
-  _astname: "AsyncFunctionDef";
-  name: string;
-  args: ASTNode[];
-  body: ASTNode[];
-  decorator_list: ASTNode[];
-  returns: ASTNode;
-  docstring: string;
-}
-
-interface ASTReturn {
-  _astname: "Return";
-  value: ASTNode;
-}
-
-type ASTNode =
-  | ASTAssignment
-  | ASTBinOp
-  | ASTName
-  | ASTNumber
-  | ASTModule
-  | ASTOperator
-  | ASTBoolOp
-  | ASTBooleanOperator
-  | ASTCompare
-  | ASTCompareOp
-  | ASTIf
-  | ASTFunctionDef
-  | ASTAsyncFunctionDef
-  | ASTReturn;
-
-function isASTOperator(node: ASTNode): node is ASTOperator {
-  return (
-    node._astname === "Add" ||
-    node._astname === "Sub" ||
-    node._astname === "Mult" ||
-    node._astname === "MatMult" ||
-    node._astname === "Div" ||
-    node._astname === "Mod" ||
-    node._astname === "Pow" ||
-    node._astname === "LShift" ||
-    node._astname === "RShift" ||
-    node._astname === "BitOr" ||
-    node._astname === "BitXor" ||
-    node._astname === "BitAnd" ||
-    node._astname === "FloorDiv"
-  );
-}
-
-function isBooleanOperator(node: ASTNode): node is ASTBooleanOperator {
-  return node._astname === "And" || node._astname === "Or";
-}
-
-function isCompareOperator(node: ASTNode): node is ASTCompareOp {
-  return (
-    node._astname === "Eq" ||
-    node._astname === "NotEq" ||
-    node._astname === "Lt" ||
-    node._astname === "LtE" ||
-    node._astname === "Gt" ||
-    node._astname === "GtE" ||
-    node._astname === "Is" ||
-    node._astname === "IsNot" ||
-    node._astname === "In" ||
-    node._astname === "NotIn"
-  );
-}
 
 // Function type for turning an AST node into entries on the diagram
 //
@@ -234,7 +130,7 @@ function makeSubTree(
   childLinks.push(comparatorChildLinks);
 }
 
-const makeNumberNode: NodeRenderer<ASTNumber> = (ast) => {
+const makeNumberNode: NodeRenderer<ASTNum> = (ast) => {
   return [
     new ASTNodeModel("Number", Sk.ffi.remapToJs(ast.n).toString()),
     [],
@@ -306,7 +202,7 @@ const makeModuleNode: NodeRenderer<ASTModule> = (ast) => {
   return [mainNode, childNodes, links];
 };
 
-const makeAssignmentNode: NodeRenderer<ASTAssignment> = (ast) => {
+const makeAssignmentNode: NodeRenderer<ASTAssign> = (ast) => {
   const links: DefaultLinkModel[][] = [];
   const nodes: ASTNodeModel[][] = [];
 
@@ -465,6 +361,74 @@ const makeReturnNode: NodeRenderer<ASTReturn> = (ast) => {
   return [node, joinArrays(childNodes), joinArrays(childLinks)];
 };
 
+// Handle cases of AST nodes that we don't have any specialised handling
+// of. This just draws a box with a label that is the node type.
+// Child nodes will not be rendered, so this isn't very useful but will
+// at least ensure that we don't crash on unrecognised node types.
+const makeGenericNode: NodeRenderer<
+  | ASTLoad
+  | ASTStore
+  | ASTUnaryOp
+  | ASTDelete
+  | ASTAugAssign
+  | ASTAnnAssign
+  | ASTFor
+  | ASTAsyncFor
+  | ASTWhile
+  | ASTAssert
+  | ASTWith
+  | ASTAsyncWith
+  | ASTRaise
+  | ASTTry
+  | ASTImport
+  | ASTImportFrom
+  | ASTGlobal
+  | ASTNonLocal
+  | ASTBreak
+  | ASTExpr
+  | ASTPass
+  | ASTContinue
+  | ASTLambda
+  | ASTPrint
+  | ASTIfExp
+  | ASTDict
+  | ASTSet
+  | ASTListComp
+  | ASTSetComp
+  | ASTDictComp
+  | ASTGeneratorExp
+  | ASTAwait
+  | ASTYield
+  | ASTYieldFrom
+  | ASTCall
+  | ASTStr
+  | ASTFormattedValue
+  | ASTJoinedStr
+  | ASTBytes
+  | ASTNameConstant
+  | ASTEllipsis
+  | ASTConstant
+  | ASTAttribute
+  | ASTStarred
+  | ASTSubscript
+  | ASTList
+  | ASTTuple
+  | ASTDel
+  | ASTAugLoad
+  | ASTAugStore
+  | ASTParam
+  | ASTSlice
+  | ASTExtSlice
+  | ASTIndex
+  | ASTInteractive
+  | ASTExpression
+  | ASTSuite
+  | ASTClassDef
+  | ASTUnaryOperator
+> = (ast) => {
+  return [new ASTNodeModel(ast._astname), [], []];
+};
+
 const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   if (ast._astname === "Assign") {
     return makeAssignmentNode(ast);
@@ -495,12 +459,77 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
     return makeFunctionDefNode(ast);
   } else if (ast._astname === "Return") {
     return makeReturnNode(ast);
+  } else if (
+    ast._astname === "Load" ||
+    ast._astname === "Store" ||
+    ast._astname === "UnaryOp" ||
+    ast._astname === "Delete" ||
+    ast._astname === "AugAssign" ||
+    ast._astname === "AnnAssign" ||
+    ast._astname === "For" ||
+    ast._astname === "AsyncFor" ||
+    ast._astname === "While" ||
+    ast._astname === "Assert" ||
+    ast._astname === "AsyncWith" ||
+    ast._astname === "Raise" ||
+    ast._astname === "Try" ||
+    ast._astname === "With" ||
+    ast._astname === "Import" ||
+    ast._astname === "ImportFrom" ||
+    ast._astname === "Global" ||
+    ast._astname === "NonLocal" ||
+    ast._astname === "Pass" ||
+    ast._astname === "Expr" ||
+    ast._astname === "Break" ||
+    ast._astname === "Continue" ||
+    ast._astname === "Lambda" ||
+    ast._astname === "Print" ||
+    ast._astname === "IfExp" ||
+    ast._astname === "Dict" ||
+    ast._astname === "Set" ||
+    ast._astname === "ListComp" ||
+    ast._astname === "SetComp" ||
+    ast._astname === "DictComp" ||
+    ast._astname === "GeneratorExp" ||
+    ast._astname === "Await" ||
+    ast._astname === "Yield" ||
+    ast._astname === "YieldFrom" ||
+    ast._astname === "Call" ||
+    ast._astname === "Str" ||
+    ast._astname === "FormattedValue" ||
+    ast._astname === "JoinedStr" ||
+    ast._astname === "Bytes" ||
+    ast._astname === "NameConstant" ||
+    ast._astname === "Ellipsis" ||
+    ast._astname === "Constant" ||
+    ast._astname === "Attribute" ||
+    ast._astname === "Starred" ||
+    ast._astname === "Subscript" ||
+    ast._astname === "List" ||
+    ast._astname === "Tuple" ||
+    ast._astname === "Del" ||
+    ast._astname === "AugLoad" ||
+    ast._astname === "AugStore" ||
+    ast._astname === "Param" ||
+    ast._astname === "Slice" ||
+    ast._astname === "ExtSlice" ||
+    ast._astname === "Index" ||
+    ast._astname === "Interactive" ||
+    ast._astname === "Expression" ||
+    ast._astname === "Suite" ||
+    ast._astname === "ClassDef" ||
+    isUnaryOperator(ast)
+  ) {
+    return makeGenericNode(ast);
   } else {
     assertNever(ast);
   }
 };
 
-const ParseTree = ({ code, mode = "statement" }: ParseTreeProps): React.ReactNode => {
+const ParseTree = ({
+  code,
+  mode = "statement",
+}: ParseTreeProps): React.ReactNode => {
   const engine = useMemo(() => {
     const engine = createEngine();
     engine.getNodeFactories().registerFactory(new ASTNodeFactory());
