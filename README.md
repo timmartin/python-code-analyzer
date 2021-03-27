@@ -1,7 +1,8 @@
 This is a package of React components for analysing and visualising working Python code,
 for educational purposes.
 
-This is still at a very early stage of development.
+You can see a live demonstration of the components
+[here](https://python-code-analyzer.aws.asymptotic.co.uk/storybook/index.html).
 
 ## Tokenizer
 
