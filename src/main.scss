@@ -1,3 +1,52 @@
+// Container for a block diagram using react-diagrams, which needs a fixed
+// height and a container sized to fill that.
+@mixin block-diagram {
+  height: 500px;
+  font-size: 16px;
+
+  .block-diagram-canvas {
+    height: 100%;
+  }
+}
+
+// A generic node in a block diagram. Different diagrams may need to customise
+// this, but this should be a useful common base.
+@mixin block-diagram-node {
+  .node-label {
+    border-radius: 6px 6px 0 0;
+    padding: 6px;
+    background: #5af;
+  }
+
+  .input-port {
+    float: left;
+    height: 1em;
+  }
+
+  .node-value {
+    padding: 6px;
+  }
+
+  .node-link {
+    padding: 6px;
+    display: flex;
+
+    & > .link-label {
+      flex-grow: 1;
+    }
+
+    & > .port {
+      flex-grow: 0;
+    }
+  }
+
+  min-width: 100px;
+  border-radius: 6px;
+  border: 1px solid #bbb;
+  box-shadow: 2px 2px 2px #bbb;
+  background-color: white;
+}
+
 .python-analyzer-view {
   &.tokenizer {
     display: flex;
@@ -30,92 +79,18 @@
   }
 
   &.parse-tree {
-    height: 500px;
-    font-size: 16px;
-
-    .block-diagram-canvas {
-      height: 100%;
-    }
+    @include block-diagram;
 
     .ast-node {
-      .node-label {
-        border-radius: 6px 6px 0 0;
-        padding: 6px;
-        background: #5af;
-      }
-
-      .input-port {
-        float: left;
-        height: 1em;
-      }
-
-      .node-value {
-        padding: 6px;
-      }
-
-      .node-link {
-        padding: 6px;
-        display: flex;
-
-        & > .link-label {
-          flex-grow: 1;
-        }
-
-        & > .port {
-          flex-grow: 0;
-        }
-      }
-
-      min-width: 100px;
-      border-radius: 6px;
-      border: 1px solid #bbb;
-      box-shadow: 2px 2px 2px #bbb;
-      background-color: white;
+      @include block-diagram-node;
     }
   }
 
   &.object-tree {
-    height: 500px;
-    font-size: 16px;
-
-    .block-diagram-canvas {
-      height: 100%;
-    }
+    @include block-diagram;
 
     .object-tree-node {
-      .node-label {
-        border-radius: 6px 6px 0 0;
-        padding: 6px;
-        background: #5af;
-      }
-
-      .input-port {
-        float: left;
-        height: 1em;
-      }
-
-      .node-value {
-        padding: 6px;
-      }
-
-      .node-link {
-        padding: 6px;
-        display: flex;
-
-        & > .link-label {
-          flex-grow: 1;
-        }
-
-        & > .port {
-          flex-grow: 0;
-        }
-      }
-
-      min-width: 100px;
-      border-radius: 6px;
-      border: 1px solid #bbb;
-      box-shadow: 2px 2px 2px #bbb;
-      background-color: white;
+      @include block-diagram-node;
     }
   }
 }
