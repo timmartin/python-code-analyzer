@@ -73,4 +73,49 @@
       background-color: white;
     }
   }
+
+  &.object-tree {
+    height: 500px;
+    font-size: 16px;
+
+    .block-diagram-canvas {
+      height: 100%;
+    }
+
+    .object-tree-node {
+      .node-label {
+        border-radius: 6px 6px 0 0;
+        padding: 6px;
+        background: #5af;
+      }
+
+      .input-port {
+        float: left;
+        height: 1em;
+      }
+
+      .node-value {
+        padding: 6px;
+      }
+
+      .node-link {
+        padding: 6px;
+        display: flex;
+
+        & > .link-label {
+          flex-grow: 1;
+        }
+
+        & > .port {
+          flex-grow: 0;
+        }
+      }
+
+      min-width: 100px;
+      border-radius: 6px;
+      border: 1px solid #bbb;
+      box-shadow: 2px 2px 2px #bbb;
+      background-color: white;
+    }
+  }
 }

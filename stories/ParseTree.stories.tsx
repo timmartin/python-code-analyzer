@@ -7,7 +7,7 @@ export default {
   component: ParseTree,
 };
 
-export const Default = (): React.ReactNode => (
+export const Default: React.FC = () => (
   <ParseTree code="a = 42 + 1" />
 );
 

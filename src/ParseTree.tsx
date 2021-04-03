@@ -526,10 +526,10 @@ const makeASTNode: NodeRenderer<ASTNode> = (ast) => {
   }
 };
 
-const ParseTree = ({
+const ParseTree: React.FC<ParseTreeProps> = ({
   code,
   mode = "statement",
-}: ParseTreeProps): React.ReactNode => {
+}: ParseTreeProps) => {
   const engine = useMemo(() => {
     const engine = createEngine();
     engine.getNodeFactories().registerFactory(new ASTNodeFactory());

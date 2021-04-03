@@ -7,20 +7,20 @@ interface Props {
   engine: DiagramEngine;
 }
 
-const ASTNodeWidget: (props: Props) => React.ReactElement = (props: Props) => {
+const ASTNodeWidget: React.FC<Props> = ({node, engine}: Props) => {
   return (
     <div className="ast-node">
       <PortWidget
         className="input-port"
-        port={props.node.inPort}
-        engine={props.engine}
+        port={node.inPort}
+        engine={engine}
       />
-      <div className="node-label">{props.node.name}</div>
-      {props.node.value && <div className="node-value">{props.node.value}</div>}
-      {props.node.subtreePorts.map((port, idx) => (
+      <div className="node-label">{node.name}</div>
+      {node.value && <div className="node-value">{node.value}</div>}
+      {node.subtreePorts.map((port, idx) => (
         <div className="node-link" key={idx}>
           <div className="link-label">{port.getName()}</div>
-          <PortWidget port={port} engine={props.engine} />
+          <PortWidget port={port} engine={engine} />
         </div>
       ))}
     </div>
