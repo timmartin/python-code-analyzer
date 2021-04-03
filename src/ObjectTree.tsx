@@ -19,7 +19,10 @@ export const ObjectTree: React.FC = () => {
   const model = new DiagramModel();
   engine.setModel(model);
 
-  model.addNode(new ObjectTreeNodeModel("Foo"));
+  const fooNode = new ObjectTreeNodeModel("Foo");
+  fooNode.addProperty("bar");
+  model.addNode(fooNode);
+
 
   return (
     <div className="python-analyzer-view object-tree">
