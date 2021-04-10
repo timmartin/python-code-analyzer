@@ -4,6 +4,11 @@ import {
 } from "@projectstorm/react-diagrams";
 import { NodeModel } from "@projectstorm/react-diagrams-core";
 
+interface Property {
+  name: string;
+  value: string | number | DefaultPortModel;
+}
+
 // Node model for showing a node in a tree of Python objects in a
 // running Python program.
 export default class ObjectTreeNodeModel extends NodeModel {
@@ -11,7 +16,7 @@ export default class ObjectTreeNodeModel extends NodeModel {
 
   public inPort: DefaultPortModel;
 
-  public propertyPorts: DefaultPortModel[] = [];
+  public properties: Property[] = [];
 
   constructor(name?: string) {
     super({
@@ -30,21 +35,23 @@ export default class ObjectTreeNodeModel extends NodeModel {
     super.addPort(this.inPort);
   }
 
-  public addProperty(label: string): DefaultPortModel {
-    const port = new DefaultPortModel({
-      in: false,
-      name: label,
-      label: label,
-      alignment: PortModelAlignment.RIGHT,
-    });
+  public addProperty(label: string, value?: string | number): void {
+    if (value === undefined) {
+      // Value is another object; it can't be displayed inline, we have
+      // to create another object and a port on this object to link to it.
+      const port = new DefaultPortModel({
+        in: false,
+        name: label,
+        label: label,
+        alignment: PortModelAlignment.RIGHT,
+      });
+      super.addPort(port);
 
-    return this.addPropertyPort(port);
-  }
+      this.properties.push({name: label, value: port});
+    } else {
+      this.properties.push({name: label, value});
+    }
 
-  public addPropertyPort(port: DefaultPortModel): DefaultPortModel {
-    super.addPort(port);
     this.height += 20;
-    this.propertyPorts.push(port);
-    return port;
   }
 }
