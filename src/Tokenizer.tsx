@@ -38,7 +38,7 @@ const tokenize = (code: string, setOutput: (data: object[]) => void): void => {
 const Tokenizer = ({
   initialCode,
   editable = true,
-}: Props): React.ReactNode => {
+}: Props): React.ReactElement => {
   const [output, setOutput] = useState([]);
   const [code, setCode] = useState(initialCode);
 

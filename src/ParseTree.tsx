@@ -103,7 +103,7 @@ type NodeRenderer<T extends ASTNode> = (
   ast: T
 ) => [ASTNodeModel, ASTNodeModel[], DefaultLinkModel[]];
 
-interface ParseTreeProps {
+export interface ParseTreeProps {
   code: string;
   mode?: "module" | "statement";
 }

@@ -20,7 +20,7 @@ interface PythonObject {
   linkedProperties: Record<string, string>;
 }
 
-interface Props {
+export interface Props {
   objects: Record<string, PythonObject>;
 }
 
