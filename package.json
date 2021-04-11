@@ -23,7 +23,7 @@
     "@storybook/addon-links": "^5.3.21",
     "@storybook/addons": "^5.3.21",
     "@storybook/preset-typescript": "^3.0.0",
-    "@storybook/react": "^6.1.0",
+    "@storybook/react": "^6.2.7",
     "@types/react": "^16.14.2",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
