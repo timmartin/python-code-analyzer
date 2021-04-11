@@ -19,9 +19,9 @@
   "devDependencies": {
     "@babel/core": "^7.12.10",
     "@babel/preset-typescript": "^7.12.7",
-    "@storybook/addon-actions": "^5.3.21",
-    "@storybook/addon-links": "^5.3.21",
-    "@storybook/addons": "^5.3.21",
+    "@storybook/addon-actions": "^6.2.7",
+    "@storybook/addon-links": "^6.2.7",
+    "@storybook/addons": "^6.2.7",
     "@storybook/preset-typescript": "^3.0.0",
     "@storybook/react": "^6.2.7",
     "@types/react": "^16.14.2",
