@@ -12,7 +12,7 @@
 // A generic node in a block diagram. Different diagrams may need to customise
 // this, but this should be a useful common base.
 @mixin block-diagram-node {
-  background-color: white;
+  background-color: #fff;
   border: 1px solid #bbb;
   border-radius: 6px;
   box-shadow: 2px 2px 2px #bbb;
