@@ -1,8 +1,8 @@
 // Container for a block diagram using react-diagrams, which needs a fixed
 // height and a container sized to fill that.
 @mixin block-diagram {
-  height: 500px;
   font-size: 16px;
+  height: 500px;
 
   .block-diagram-canvas {
     height: 100%;
@@ -12,10 +12,16 @@
 // A generic node in a block diagram. Different diagrams may need to customise
 // this, but this should be a useful common base.
 @mixin block-diagram-node {
+  background-color: white;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  box-shadow: 2px 2px 2px #bbb;
+  min-width: 100px;
+
   .node-label {
+    background: #5af;
     border-radius: 6px 6px 0 0;
     padding: 6px;
-    background: #5af;
   }
 
   .input-port {
@@ -28,23 +34,17 @@
   }
 
   .node-link {
-    padding: 6px;
     display: flex;
+    padding: 6px;
 
-    & > .link-label {
+    > .link-label {
       flex-grow: 1;
     }
 
-    & > .port {
+    > .port {
       flex-grow: 0;
     }
   }
-
-  min-width: 100px;
-  border-radius: 6px;
-  border: 1px solid #bbb;
-  box-shadow: 2px 2px 2px #bbb;
-  background-color: white;
 }
 
 .python-analyzer-view {
@@ -57,20 +57,20 @@
     }
 
     .editor {
-      max-width: 30em;
       flex-grow: 1;
+      max-width: 30em;
 
       textarea {
-        width: 100%;
         height: 10em;
         overflow: auto;
+        width: 100%;
       }
     }
 
     .output {
-      min-width: 5em;
-      max-width: 20em;
       flex-grow: 1;
+      max-width: 20em;
+      min-width: 5em;
     }
 
     button {
