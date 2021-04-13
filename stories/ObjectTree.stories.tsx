@@ -17,6 +17,13 @@ export const Default: React.FC = () => {
       },
       linkedProperties: {},
     },
+    bar: {
+      name: "Bar",
+      inlineProperties: {},
+      linkedProperties: {
+        next: "foo",
+      },
+    },
   };
 
   return <ObjectTree objects={objectModel} />;

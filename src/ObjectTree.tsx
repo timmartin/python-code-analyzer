@@ -3,7 +3,10 @@
 // relationships between them.
 
 import React, { useMemo } from "react";
-import createEngine, { DiagramModel } from "@projectstorm/react-diagrams";
+import createEngine, {
+  DagreEngine,
+  DiagramModel,
+} from "@projectstorm/react-diagrams";
 import { CanvasWidget } from "@projectstorm/react-canvas-core";
 
 import ObjectTreeNodeFactory from "./diagrams/ObjectTreeNodeFactory";
@@ -34,17 +37,34 @@ export const ObjectTree: React.FC<Props> = ({ objects }: Props) => {
   const model = new DiagramModel();
   engine.setModel(model);
 
+  const routingEngine = useMemo(
+    () =>
+      new DagreEngine({
+        graph: {
+          rankDir: "LR",
+          marginx: 25,
+          marginy: 25,
+        },
+        includeLinks: true,
+      }),
+    []
+  );
+
   for (const objectName of Object.getOwnPropertyNames(objects)) {
     const pythonObject = objects[objectName];
     const node = new ObjectTreeNodeModel(pythonObject.name);
 
-    for (const inlinePropertyName of Object.getOwnPropertyNames(pythonObject.inlineProperties)) {
+    for (const inlinePropertyName of Object.getOwnPropertyNames(
+      pythonObject.inlineProperties
+    )) {
       const inlineProperty = pythonObject.inlineProperties[inlinePropertyName];
       node.addProperty(inlinePropertyName, inlineProperty);
     }
 
     model.addNode(node);
   }
+
+  routingEngine.redistribute(model);
 
   return (
     <div className="python-analyzer-view object-tree">

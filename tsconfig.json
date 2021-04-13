@@ -8,6 +8,6 @@
     "strict": false,
     "jsx": "react"
   },
-  "include": ["src"],
+  "include": ["src", "stories"],
   "exclude": ["node_modules"]
 }
