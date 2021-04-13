@@ -52,6 +52,6 @@ export default class ObjectTreeNodeModel extends NodeModel {
       this.properties.push({name: label, value});
     }
 
-    this.height += 20;
+    this.height += 32;
   }
 }
