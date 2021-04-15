@@ -24,6 +24,8 @@ export default class ObjectTreeNodeModel extends NodeModel {
     });
 
     this.name = name;
+    this.height = 40;
+    this.width = 100;
 
     this.inPort = new DefaultPortModel({
       in: true,
@@ -35,23 +37,27 @@ export default class ObjectTreeNodeModel extends NodeModel {
     super.addPort(this.inPort);
   }
 
-  public addProperty(label: string, value?: string | number): void {
-    if (value === undefined) {
-      // Value is another object; it can't be displayed inline, we have
-      // to create another object and a port on this object to link to it.
-      const port = new DefaultPortModel({
-        in: false,
-        name: label,
-        label: label,
-        alignment: PortModelAlignment.RIGHT,
-      });
-      super.addPort(port);
-
-      this.properties.push({name: label, value: port});
-    } else {
-      this.properties.push({name: label, value});
-    }
+  public addPropertyValue(label: string, value: string | number): void {
+    this.properties.push({ name: label, value });
 
     this.height += 32;
+  }
+
+  // Add a property that links elsewhere, so has a port assigned to it.
+  public addPropertyPort(label: string): DefaultPortModel {
+    // Value is another object; it can't be displayed inline, we have
+    // to create another object and a port on this object to link to it.
+    const port = new DefaultPortModel({
+      in: false,
+      name: label,
+      label: label,
+      alignment: PortModelAlignment.RIGHT,
+    });
+    super.addPort(port);
+
+    this.properties.push({ name: label, value: port });
+    this.height += 32;
+
+    return port;
   }
 }

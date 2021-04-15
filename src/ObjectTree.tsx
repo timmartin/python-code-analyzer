@@ -50,6 +50,9 @@ export const ObjectTree: React.FC<Props> = ({ objects }: Props) => {
     []
   );
 
+  const linkedProperties = [];
+  const modelObjects = {};
+
   for (const objectName of Object.getOwnPropertyNames(objects)) {
     const pythonObject = objects[objectName];
     const node = new ObjectTreeNodeModel(pythonObject.name);
@@ -58,10 +61,23 @@ export const ObjectTree: React.FC<Props> = ({ objects }: Props) => {
       pythonObject.inlineProperties
     )) {
       const inlineProperty = pythonObject.inlineProperties[inlinePropertyName];
-      node.addProperty(inlinePropertyName, inlineProperty);
+      node.addPropertyValue(inlinePropertyName, inlineProperty);
+    }
+
+    for (const linkedPropertyName of Object.getOwnPropertyNames(
+      pythonObject.linkedProperties
+    )) {
+      const port = node.addPropertyPort(linkedPropertyName);
+      linkedProperties.push({port, target: pythonObject.linkedProperties[linkedPropertyName]});
     }
 
     model.addNode(node);
+    modelObjects[objectName] = node;
+  }
+
+  for (const link of linkedProperties) {
+    const targetObject = modelObjects[link.target];
+    model.addLink(link.port.link(targetObject.inPort));
   }
 
   routingEngine.redistribute(model);
