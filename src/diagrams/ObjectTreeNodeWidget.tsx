@@ -15,10 +15,10 @@ const ObjectTreeNodeWidget: React.FC<Props> = ({ node, engine }: Props) => (
     <div className="node-label">{node.name}</div>
     {node.properties.map(({ name, value }, idx) => (
       <div className="node-link" key={idx}>
-        <div className="link-label">
-          {name}
-          {!(value instanceof DefaultPortModel) && value}
-        </div>
+        <div className="link-label">{name}</div>
+        {!(value instanceof DefaultPortModel) && (
+          <div className="inline-value">{value}</div>
+        )}
         {value instanceof DefaultPortModel && (
           <PortWidget port={value} engine={engine} />
         )}
