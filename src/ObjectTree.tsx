@@ -11,16 +11,35 @@ import { CanvasWidget } from "@projectstorm/react-canvas-core";
 
 import ObjectTreeNodeFactory from "./diagrams/ObjectTreeNodeFactory";
 import ObjectTreeNodeModel from "./diagrams/ObjectTreeNodeModel";
+import { assertNever } from "./utils";
+
+// A value that a property can have that will be inline in the object
+// that owns it.
+interface InlineValue {
+  valueType: "inline";
+  value: string | number;
+}
+
+// A value that a property can have that will be linked to another
+// python object in the object tree
+interface LinkedValue {
+  valueType: "linked";
+
+  // This is a reference to the linked object, in the form of a name
+  // in the namespace of the collection that represents the object tree
+  // (which may not be the same as any real Python namespace in the
+  // code we're representing)
+  objectRef: string;
+}
+
+type PythonValue = InlineValue | LinkedValue;
 
 interface PythonObject {
   name: string;
 
-  // Properties with values that are built-in types and can be displayed
-  // inline rather than linking to a separate object.
-  inlineProperties: Record<string, string | number>;
+  properties: Record<string, PythonValue>;
 
-  // Properties whose value is another node in the object tree.
-  linkedProperties: Record<string, string>;
+  arrayValues: PythonValue[];
 }
 
 export interface Props {
@@ -57,18 +76,22 @@ export const ObjectTree: React.FC<Props> = ({ objects }: Props) => {
     const pythonObject = objects[objectName];
     const node = new ObjectTreeNodeModel(pythonObject.name);
 
-    for (const inlinePropertyName of Object.getOwnPropertyNames(
-      pythonObject.inlineProperties
+    for (const propertyName of Object.getOwnPropertyNames(
+      pythonObject.properties
     )) {
-      const inlineProperty = pythonObject.inlineProperties[inlinePropertyName];
-      node.addPropertyValue(inlinePropertyName, inlineProperty);
-    }
+      const property = pythonObject.properties[propertyName];
 
-    for (const linkedPropertyName of Object.getOwnPropertyNames(
-      pythonObject.linkedProperties
-    )) {
-      const port = node.addPropertyPort(linkedPropertyName);
-      linkedProperties.push({port, target: pythonObject.linkedProperties[linkedPropertyName]});
+      if (property.valueType === "inline") {
+        node.addPropertyValue(propertyName, property.value);
+      } else if (property.valueType === "linked") {
+        const port = node.addPropertyPort(propertyName);
+        linkedProperties.push({
+          port,
+          target: property.objectRef,
+        });
+      } else {
+        assertNever(property);
+      }
     }
 
     model.addNode(node);
