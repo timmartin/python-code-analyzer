@@ -34,7 +34,7 @@ interface LinkedValue {
 
 type PythonValue = InlineValue | LinkedValue;
 
-interface PythonObject {
+export interface PythonObject {
   name: string;
 
   properties: Record<string, PythonValue>;
@@ -91,6 +91,17 @@ export const ObjectTree: React.FC<Props> = ({ objects }: Props) => {
         });
       } else {
         assertNever(property);
+      }
+    }
+
+    for (const arrayEntry of pythonObject.arrayValues) {
+      if (arrayEntry.valueType === "inline") {
+        node.addArrayValue(arrayEntry.value);
+      } else if (arrayEntry.valueType === "linked") {
+        const port = node.addArrayPort();
+        linkedProperties.push({ port, target: arrayEntry.objectRef });
+      } else {
+        assertNever(arrayEntry);
       }
     }
 

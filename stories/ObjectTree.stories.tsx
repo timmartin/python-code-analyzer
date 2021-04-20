@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import ObjectTree from "../src/ObjectTree";
+import ObjectTree, { PythonObject } from "../src/ObjectTree";
 
 export default {
   title: "Object tree",
@@ -30,11 +30,31 @@ export const LinkedNodes: React.FC = () => {
 };
 
 export const ArrayNode: React.FC = () => {
-  const objectModel = {
-    foo: {
-      name: "foo",
+  const objectModel: Record<string, PythonObject> = {
+    lunch: {
+      name: "lunch",
       properties: {},
-      arrayValues: [],
+      arrayValues: [
+        { valueType: "linked", objectRef: "fruits" },
+        { valueType: "linked", objectRef: "drinks" },
+      ],
+    },
+    fruits: {
+      name: "fruits",
+      properties: {},
+      arrayValues: [
+        { valueType: "inline", value: "apple" },
+        { valueType: "inline", value: "banana" },
+        { valueType: "inline", value: "cherry" },
+      ],
+    },
+    drinks: {
+      name: "drinks",
+      properties: {},
+      arrayValues: [
+        { valueType: "inline", value: "water" },
+        { valueType: "inline", value: "cola" },
+      ],
     },
   };
 

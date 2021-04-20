@@ -24,6 +24,18 @@ const ObjectTreeNodeWidget: React.FC<Props> = ({ node, engine }: Props) => (
         )}
       </div>
     ))}
+
+    {node.arrayEntries.map((value, index) => (
+      <div className="node-link" key={index}>
+        <div className="link-label">{index}</div>
+        {!(value instanceof DefaultPortModel) && (
+          <div className="inline-value">{value}</div>
+        )}
+        {value instanceof DefaultPortModel && (
+          <PortWidget port={value} engine={engine} />
+        )}
+      </div>
+    ))}
   </div>
 );
 
