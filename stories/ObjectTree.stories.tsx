@@ -8,7 +8,7 @@ export default {
 };
 
 export const LinkedNodes: React.FC = () => {
-  const objectModel = {
+  const objectModel: Record<string, PythonObject> = {
     foo: {
       name: "Foo",
       properties: {
@@ -55,6 +55,35 @@ export const ArrayNode: React.FC = () => {
         { valueType: "inline", value: "water" },
         { valueType: "inline", value: "cola" },
       ],
+    },
+  };
+
+  return <ObjectTree objects={objectModel} />;
+};
+
+// Object trees can have loops in them, though it looks pretty bad
+export const LoopedObjects: React.FC = () => {
+  const objectModel: Record<string, PythonObject> = {
+    foo: {
+      name: "foo",
+      properties: {
+        next: { valueType: "linked" as const, objectRef: "bar" },
+      },
+      arrayValues: [],
+    },
+    bar: {
+      name: "bar",
+      properties: {
+        next: { valueType: "linked" as const, objectRef: "baz" },
+      },
+      arrayValues: [],
+    },
+    baz: {
+      name: "baz",
+      properties: {
+        next: { valueType: "linked" as const, objectRef: "foo" },
+      },
+      arrayValues: [],
     },
   };
 
